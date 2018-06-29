@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {buildApiRequest, executeRequest} from "../utils/gapi";
+import {buildPlaylistsRequest, executeRequest} from "../utils/gapi";
 import { Link } from "react-router-dom";
 import "./Playlists.css";
 
@@ -51,25 +51,22 @@ class Playlists extends Component {
     };
 
     retrieve = (nextPageToken) => {
-
         console.log("Playlists.retrieve", nextPageToken);
-
-        // if (!this.state.google_api) return;
-
-        let request = buildApiRequest(
-            this.state.google_api,
-            'GET',
-            '/youtube/v3/playlists',
-            {
-                // 'channelId': 'UCE0q36_agQAeb4G3PXivkew',
-                'mine': 'true',
-                'maxResults': '50',
-                'part': 'snippet,contentDetails',
-                'onBehalfOfContentOwner': '',
-                'onBehalfOfContentOwnerChannel': '',
-                'pageToken': nextPageToken
-            });
-        executeRequest(request, this.store);
+        // // if (!this.state.google_api) return;
+        //
+        // let request = buildApiRequest(
+        //     'GET',
+        //     '/youtube/v3/playlists',
+        //     {
+        //         // 'channelId': 'UCE0q36_agQAeb4G3PXivkew',
+        //         'mine': 'true',
+        //         'maxResults': '50',
+        //         'part': 'snippet,contentDetails',
+        //         'onBehalfOfContentOwner': '',
+        //         'onBehalfOfContentOwnerChannel': '',
+        //         'pageToken': nextPageToken
+        //     });
+        executeRequest(buildPlaylistsRequest(nextPageToken), this.store);
     };
 
     componentDidMount() {

@@ -71,7 +71,7 @@
         });
     }
 
-    export function buildApiRequest(api, requestMethod, path, params, properties) {
+    export function buildApiRequest(requestMethod, path, params, properties) {
         console.log("buildApiRequest");
 
         if (window.gapi.client === undefined || window.gapi.client === null) {
@@ -97,4 +97,33 @@
             });
         }
         return request;
+    }
+
+
+    export function buildPlaylistsRequest(pageToken) {
+        console.log("buildPlaylistsRequests", pageToken);
+        return buildApiRequest(
+            'GET',
+            '/youtube/v3/playlists',
+            {
+                'mine': 'true',
+                'maxResults': '50',
+                'part': 'snippet,contentDetails',
+                'onBehalfOfContentOwner': '',
+                'onBehalfOfContentOwnerChannel': '',
+                'pageToken': pageToken
+            });
+    }
+
+
+    export function buildPlaylistItemsRequest(playlistId, pageToken) {
+        return buildApiRequest(
+            'GET',
+            '/youtube/v3/playlistItems',
+            {
+                'maxResults': '50',
+                'part': 'snippet,contentDetails',
+                'playlistId': playlistId,
+                'pageToken': pageToken
+            });
     }

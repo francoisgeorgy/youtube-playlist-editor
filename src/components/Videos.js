@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {buildApiRequest, executeRequest} from "../utils/gapi";
+import {buildApiRequest, buildPlaylistsRequest, buildPlaylistItemsRequest, executeRequest} from "../utils/gapi";
 import "./Videos.css";
 
 /**
@@ -13,7 +13,9 @@ class Videos extends Component {
         this.state = {
             isAuthorized: false,
             playlistId: props.match.params.playlistid,
-            videos: null
+            videos: null,
+            playlists: null,
+            moveToPlaylistId: null
         };
     }
 
@@ -37,6 +39,18 @@ class Videos extends Component {
             this.retrieve();
         }
     }
+
+    storePlaylists = (data) => {
+        console.log("Videos.storePlaylists", data.items);
+        if (!data) return;
+        let list = data.items;
+        list.sort(
+            function(a, b) {
+                return (a.snippet.title.toLowerCase() > b.snippet.title.toLowerCase()) ? 1 : ((b.snippet.title.toLowerCase() > a.snippet.title.toLowerCase()) ? -1 : 0);
+            }
+        );
+        this.setState({playlists: list});
+    };
 
     store = (data, currentToken) => {
 
@@ -88,28 +102,96 @@ class Videos extends Component {
 
     retrieve = (nextPageToken) => {
         console.log("Videos.retrieve", this.state.playlistId, nextPageToken);
-        let request = buildApiRequest(
-            this.state.google_api,
-            'GET',
-            '/youtube/v3/playlistItems',
-            {
-                'maxResults': '50',
-                'part': 'snippet,contentDetails',
-                'playlistId': this.state.playlistId,
-                'pageToken': nextPageToken
-            });
-        executeRequest(request, (data) => this.store(data, nextPageToken));
+        // let request = buildApiRequest(
+        //     'GET',
+        //     '/youtube/v3/playlistItems',
+        //     {
+        //         'maxResults': '50',
+        //         'part': 'snippet,contentDetails',
+        //         'playlistId': this.state.playlistId,
+        //         'pageToken': nextPageToken
+        //     });
+        executeRequest(buildPlaylistsRequest(nextPageToken), this.storePlaylists);
+        executeRequest(buildPlaylistItemsRequest(this.state.playlistId, nextPageToken), (data) => this.store(data, nextPageToken));
     };
 
+    removeSuccess = (videoItemId) => {
+        console.log("Videos.removeSuccess", videoItemId);
+        let videos = this.state.videos;
+        let i = videos.findIndex(function f(e) { return e.id === videoItemId; });
+        console.log("Videos.removeSuccess: video to delete: ", i, videos[i]);
+        videos.splice(i, 1);
+        this.setState({ videos })
+    };
+
+    removeError = (error) => {
+        console.log("Videos.removeError", error.code, error.message);
+    };
+
+    /**
+     * Remove a video from the current playlist
+     * @param videoItemId ID of the video-item in the current playlist
+     */
+    remove = (videoItemId) => {
+        console.log("Videos.remove", videoItemId);
+        if (!videoItemId) return;
+        let request = buildApiRequest(
+            'DELETE',
+            '/youtube/v3/playlistItems',
+            {
+                'id': videoItemId
+            });
+        executeRequest(request, () => this.removeSuccess(videoItemId), this.removeError);
+    };
+
+    // insertSuccess = (videoItemId) => {
+    //     console.log("");
+    //     this.remove(videoItemId);
+    // };
+
+    insertError = (error) => {
+        console.log("Videos.insertError", error);
+    };
+
+    /**
+     * Move the video to another playlist. The video will be removed from the current playlist.
+     * @param videoItemId ID of the video-item in the current playlist
+     * @param videoId ID of the video
+     */
+    move = (videoItemId, videoId, moveToPlaylistId) => {
+        console.log("Videos.move", videoItemId, videoId, moveToPlaylistId);
+        if (!moveToPlaylistId) return;
+
+        let request = buildApiRequest(
+            'POST',
+            '/youtube/v3/playlistItems',
+            {
+                'part': 'snippet',
+                'onBehalfOfContentOwner': ''
+            }, {
+                'snippet.playlistId': moveToPlaylistId,
+                'snippet.resourceId.kind': 'youtube#video',
+                'snippet.resourceId.videoId': videoId,
+                'snippet.position': ''
+            });
+        //executeRequest(request, () => { this.insertSuccess(videoItemId) }, this.insertError);
+        executeRequest(request, () => { this.remove(videoItemId) }, this.insertError);
+    };
+
+    setMoveToList = (event) => {
+        console.log("Videos.setMoveToList", event.target.value);
+        this.setState({ moveToPlaylistId: event.target.value });
+    };
 
     componentDidMount() {
         console.log("Videos.componentDidMount");
         this.retrieve();
+        // this.retrievePlaylists();
     }
 
     render() {
 
-        const { isAuthorized, videos } = this.state;
+        const { isAuthorized, videos, playlists, moveToPlaylistId } = this.state;
 
         console.log("Videos.render", videos);
 
@@ -122,9 +204,29 @@ class Videos extends Component {
                         <h2>list of videos</h2>
                         <h3>{videos.length} videos</h3>
                         <div>
+                            move to playlist
+                            {
+                                playlists &&
+                                <select onChange={this.setMoveToList}>
+                                    <option value="">select list to move to</option>
+                                {playlists.map((p, i) => (
+                                    <option key={i} value={p.id}>
+                                        {p.snippet.title}
+                                    </option>
+                                ))}
+                                </select>
+                            }
+                        </div>
+                        <div>
                             {
                                 videos.map((video, index) => {
-                                    return <div key={index}>{video.snippet.title}</div>
+                                    return (
+                                        <div key={index}>
+                                            {video.snippet.title}
+                                            <button onClick={() => this.remove(video.id)}>remove</button>
+                                            {moveToPlaylistId && <button onClick={() => this.move(video.id, video.contentDetails.videoId, moveToPlaylistId)}>move</button>}
+                                        </div>
+                                    )
                                 })
                             }
                         </div>
