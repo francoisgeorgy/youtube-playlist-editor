@@ -1,6 +1,8 @@
 import React, {Component} from 'react';
 import './App.css';
 import Playlists from "./components/Playlists";
+import Videos from "./components/Videos";
+import { BrowserRouter as Router, Route, Link, Switch } from "react-router-dom";
 
 class App extends Component {
 
@@ -62,15 +64,39 @@ class App extends Component {
         this.state.google_api.signIn().then(
             (user) => {
                 console.log("signIn return, user", user);
+                let p = user.getBasicProfile();
+                console.log("signIn return, user profile", p);
                 let isAuthorized = user.hasGrantedScopes('https://www.googleapis.com/auth/youtube.force-ssl https://www.googleapis.com/auth/youtubepartner');
                 console.log("signIn return, isAuthorized=" + isAuthorized);
                 this.setState({
-                    user: user,
+                    userProfile: p,
                     isAuthorized: isAuthorized
                 });
             }
         );
     };
+
+/*
+
+user profile:
+
+{
+    "Eea":"10679130",
+    "ig":"Firstname Lastname",
+    "ofa":"Firstname",
+    "wea":"Lastname",
+    "Paa":"https://photo.jpg",
+    "U3":"address@mail.com"
+}
+gapi.auth2.BasicProfile	You can retrieve the properties of gapi.auth2.BasicProfile with the following methods:
+BasicProfile.getId()
+BasicProfile.getName()
+BasicProfile.getGivenName()
+BasicProfile.getFamilyName()
+BasicProfile.getImageUrl()
+BasicProfile.getEmail()
+
+*/
 
     componentDidMount() {
         console.log("gapi", window.gapi);
@@ -88,18 +114,41 @@ class App extends Component {
     render() {
         console.log("render", this.state);
 
-        const { isAuthorized } = this.state;
+        const { isAuthorized, userProfile } = this.state;
 
         return (
-            <div>
-                <button onClick={this.authorize}>Authorize</button>
-                {isAuthorized &&
+            <Router>
                 <div>
-                    <div>authorized</div>
-                    <Playlists />
+                    <div class="header">
+                        Youtube Playlist Editor
+                    {
+                        isAuthorized ?
+                            <div class="header-info">Authorized for {userProfile.getName()}</div>
+                        :
+                            <button onClick={this.authorize}>Authorize</button>
+                    }
+                    {isAuthorized && <Link className="header-link" to="/playlists">Playlists</Link>}
+                    </div>
+                    <div class="content">
+                        {!isAuthorized &&
+                            <div>
+                                <p>You need to authorize the application to access your Youtube playlists.</p>
+                                <p>Click the <button onClick={this.authorize}>Authorize</button> button to allow the access.</p>
+                            </div>
+                        }
+                        <Switch>
+                            {/*<Route exact={true} path="/" component={Home}/>*/}
+                            {/*<Route path="/playlists" component={Playlists} />*/}
+                            <Route path="/videos/:playlistid" render={(props) => (
+                                <Videos {...props} isAuthorized={isAuthorized} />
+                            )} />
+                            <Route path='/playlists' render={(props) => (
+                                <Playlists {...props} isAuthorized={isAuthorized} />
+                            )} />
+                        </Switch>
+                    </div>
                 </div>
-                }
-            </div>
+            </Router>
         );
     }
 

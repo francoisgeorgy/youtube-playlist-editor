@@ -1,5 +1,6 @@
 import React, {Component} from "react";
 import {buildApiRequest, executeRequest} from "../utils/gapi";
+import { Link } from "react-router-dom";
 import "./Playlists.css";
 
 /**
@@ -7,12 +8,38 @@ import "./Playlists.css";
  */
 class Playlists extends Component {
 
-    state = {
-        playlists: null
-    };
+    constructor(props) {
+        super(props);
+        console.log("Playlists.constructor", props);
+        this.state = {
+            isAuthorized: false,
+            playlists: null
+        };
+    }
+
+    static getDerivedStateFromProps(props, state) {
+        console.log("Playlists.getDerivedStateFromProps", props);
+        if (props.isAuthorized !== state.isAuthorized) {
+            return {
+                isAuthorized: props.isAuthorized
+            };
+        }
+
+        // No state update necessary
+        return null;
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        console.log("Playlists.componentDidUpdate");
+        // At this point, we're in the "commit" phase, so it's safe to load the new data.
+        if (this.state.isAuthorized && this.state.playlists === null) {
+            // !!! only retrieve data if state.playlists is empty; otherwise this will generate an endless loop.
+            this.retrieve();
+        }
+    }
 
     store = (data) => {
-        console.log("displayPlaylists", data.items);
+        console.log("Playlists.store", data.items);
         if (!data) return;
         let list = data.items;
         list.sort(
@@ -24,7 +51,11 @@ class Playlists extends Component {
     };
 
     retrieve = (nextPageToken) => {
-        console.log("retrievePlaylists", nextPageToken);
+
+        console.log("Playlists.retrieve", nextPageToken);
+
+        // if (!this.state.google_api) return;
+
         let request = buildApiRequest(
             this.state.google_api,
             'GET',
@@ -42,7 +73,7 @@ class Playlists extends Component {
     };
 
     componentDidMount() {
-        console.log("Playlists: componentDidMount");
+        console.log("Playlists.componentDidMount");
         this.retrieve();
     }
 
@@ -87,26 +118,33 @@ class Playlists extends Component {
 
     render() {
 
-        const { playlists } = this.state;
+        const { isAuthorized, playlists } = this.state;
 
         console.log("Playlists render", playlists);
 
-        if (playlists) {
-            return (
-                <div>
-                    <h2>list of playlists</h2>
-                    <div>
-                        {
-                            playlists.map((playlist, index) => {
-                                console.log(JSON.stringify(playlist));
-                                return <div key={index}><a href={`#${playlist.id}`}>{playlist.snippet.title}</a> ({playlist.contentDetails.itemCount} videos)</div>
-                            })
-                        }
-                    </div>
-                </div>
-            )
+        if (!isAuthorized) {
+            return <div></div>
         } else {
-            return <div>Retrieving the list of playlists...</div>
+            if (playlists) {
+                return (
+                    <div>
+                        <h2>list of playlists</h2>
+                        <div>
+                            {
+                                playlists.map((playlist, index) => {
+                                    // console.log(JSON.stringify(playlist));
+                                    return <div key={index} >
+                                            <Link to={`/videos/${playlist.id}`}>{playlist.snippet.title} ({playlist.contentDetails.itemCount} videos)</Link>
+                                    </div>
+                                    // return <div key={index}><a href={`#${playlist.id}`}>{playlist.snippet.title}</a> ({playlist.contentDetails.itemCount} videos)</div>
+                                })
+                            }
+                        </div>
+                    </div>
+                )
+            } else {
+                return <div>Retrieving the list of playlists...</div>
+            }
         }
 
     }

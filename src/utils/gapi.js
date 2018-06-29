@@ -27,7 +27,6 @@
                     }
                 }
             }
-            ;
         }
         return resource;
     }
@@ -44,6 +43,12 @@
 
     export function executeRequest(request, callback, callbackError) {
         console.log("executeRequest");
+
+        if (request === undefined || request === null) {
+            console.log("executeRequest request is undefined or null");
+            return;
+        }
+
         request.execute(function(data) {
             // console.log(data);
             if (data) {
@@ -68,6 +73,12 @@
 
     export function buildApiRequest(api, requestMethod, path, params, properties) {
         console.log("buildApiRequest");
+
+        if (window.gapi.client === undefined || window.gapi.client === null) {
+            console.log("buildApiRequest window.gapi.client is undefined or null");
+            return null;
+        }
+
         params = removeEmptyParams(params);
         let request;
         if (properties) {

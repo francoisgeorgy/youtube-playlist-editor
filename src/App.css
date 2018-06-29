@@ -30,3 +30,28 @@
         transform: rotate(360deg);
     }
 }
+
+.header {
+    margin: 0 0 10px 0;
+    padding: 10px;
+    background-color: #eee;
+    border-bottom: 1px solid #aaa;
+}
+
+.header-info,
+.header button {
+    float: right;
+}
+
+.header-info,
+.header button {
+    /*margin-right: 2em;*/
+}
+
+.header-link {
+    margin-left: 2em;
+}
+
+.content {
+    padding: 0 10px;
+}
