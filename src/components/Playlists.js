@@ -13,7 +13,8 @@ class Playlists extends Component {
         console.log("Playlists.constructor", props);
         this.state = {
             isAuthorized: false,
-            playlists: null
+            playlists: null,
+            filter: ''
         };
     }
 
@@ -69,6 +70,15 @@ class Playlists extends Component {
         executeRequest(buildPlaylistsRequest(nextPageToken), this.store);
     };
 
+    updateFilter = (event) => {
+        console.log("Playlists.updateFilter");
+        if (event.keyCode === 27) {
+            this.setState({ filter: '' });
+        } else {
+            this.setState({ filter: event.target.value });
+        }
+    };
+
     componentDidMount() {
         console.log("Playlists.componentDidMount");
         this.retrieve();
@@ -115,7 +125,7 @@ class Playlists extends Component {
 
     render() {
 
-        const { isAuthorized, playlists } = this.state;
+        const { isAuthorized, playlists, filter } = this.state;
 
         console.log("Playlists render");
 
@@ -126,9 +136,12 @@ class Playlists extends Component {
                 return (
                     <div>
                         <h2>list of playlists</h2>
+                        <div className="filter">
+                            filter: <input type="text" onKeyUp={this.updateFilter} />
+                        </div>
                         <div>
                             {
-                                playlists.map((playlist, index) => {
+                                playlists.filter((p) => p.snippet.title.indexOf(filter) > -1).map((playlist, index) => {
                                     // console.log(JSON.stringify(playlist));
                                     return <div key={index} >
                                             <Link to={`/videos/${playlist.id}`}>{playlist.snippet.title} ({playlist.contentDetails.itemCount} videos)</Link>
