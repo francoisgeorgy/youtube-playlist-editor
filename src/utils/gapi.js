@@ -1,6 +1,6 @@
 
     export function createResource(properties) {
-        console.log("createResource");
+        // console.log("createResource");
         let resource = {};
         let normalizedProps = properties;
         for (let p in properties) {
@@ -32,7 +32,7 @@
     }
 
     export function removeEmptyParams(params) {
-        console.log("removeEmptyParams");
+        // console.log("removeEmptyParams");
         for (let p in params) {
             if (params.hasOwnProperty(p) && (!params[p] || params[p] === 'undefined')) {
                 delete params[p];
@@ -42,7 +42,7 @@
     }
 
     export function executeRequest(request, callback, callbackError) {
-        console.log("executeRequest");
+        // console.log("executeRequest");
 
         if (request === undefined || request === null) {
             console.log("executeRequest request is undefined or null");
@@ -72,7 +72,7 @@
     }
 
     export function buildApiRequest(requestMethod, path, params, properties) {
-        console.log("buildApiRequest");
+        // console.log("buildApiRequest");
 
         if (window.gapi.client === undefined || window.gapi.client === null) {
             console.log("buildApiRequest window.gapi.client is undefined or null");
@@ -101,7 +101,7 @@
 
 
     export function buildPlaylistsRequest(pageToken) {
-        console.log("buildPlaylistsRequests", pageToken);
+        // console.log("buildPlaylistsRequests", pageToken);
         return buildApiRequest(
             'GET',
             '/youtube/v3/playlists',

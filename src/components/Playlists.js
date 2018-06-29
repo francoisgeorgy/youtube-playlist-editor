@@ -39,7 +39,7 @@ class Playlists extends Component {
     }
 
     store = (data) => {
-        console.log("Playlists.store", data.items);
+        console.log("Playlists.store");
         if (!data) return;
         let list = data.items;
         list.sort(
@@ -117,7 +117,7 @@ class Playlists extends Component {
 
         const { isAuthorized, playlists } = this.state;
 
-        console.log("Playlists render", playlists);
+        console.log("Playlists render");
 
         if (!isAuthorized) {
             return <div></div>

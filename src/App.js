@@ -119,17 +119,17 @@ BasicProfile.getEmail()
         return (
             <Router>
                 <div>
-                    <div class="header">
+                    <div className="header">
                         Youtube Playlist Editor
                     {
                         isAuthorized ?
-                            <div class="header-info">Authorized for {userProfile.getName()}</div>
+                            <div className="header-info">Authorized for {userProfile.getName()}</div>
                         :
                             <button onClick={this.authorize}>Authorize</button>
                     }
                     {isAuthorized && <Link className="header-link" to="/playlists">Playlists</Link>}
                     </div>
-                    <div class="content">
+                    <div className="content">
                         {!isAuthorized &&
                             <div>
                                 <p>You need to authorize the application to access your Youtube playlists.</p>

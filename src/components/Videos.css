@@ -1,0 +1,12 @@
+.videos select {
+    margin-left: 10px;
+}
+
+.videos button {
+    margin-left: 10px;
+}
+
+.videos .filter,
+.videos .playlist-selector {
+    margin-bottom: 10px;
+}

@@ -15,7 +15,8 @@ class Videos extends Component {
             playlistId: props.match.params.playlistid,
             videos: null,
             playlists: null,
-            moveToPlaylistId: null
+            moveToPlaylistId: null,
+            filter: ''
         };
     }
 
@@ -35,13 +36,17 @@ class Videos extends Component {
         console.log("Videos.componentDidUpdate");
         // At this point, we're in the "commit" phase, so it's safe to load the new data.
         if (this.state.isAuthorized && this.state.playlistId && this.state.videos === null) {
+            // !!! only retrieve data if state.videos is empty; otherwise this will generate an endless loop.
+            this.retrieveVideos();
+        }
+        if (this.state.isAuthorized && this.state.playlists === null) {
             // !!! only retrieve data if state.playlists is empty; otherwise this will generate an endless loop.
-            this.retrieve();
+            this.retrievePlaylists();
         }
     }
 
     storePlaylists = (data) => {
-        console.log("Videos.storePlaylists", data.items);
+        console.log("Videos.storePlayLists", data.items);
         if (!data) return;
         let list = data.items;
         list.sort(
@@ -52,9 +57,9 @@ class Videos extends Component {
         this.setState({playlists: list});
     };
 
-    store = (data, currentToken) => {
+    storeVideos = (data, currentToken) => {
 
-        console.log("Videos.store", data.items, currentToken);
+        console.log("Videos.storeVideos", currentToken);
 
         if (!data) return;
 
@@ -78,42 +83,21 @@ class Videos extends Component {
 
         if (data.nextPageToken) {
             console.log('Videos.store: get next page with token ' + data.nextPageToken);
-            this.retrieve(data.nextPageToken);
+            this.retrieveVideos(data.nextPageToken);
         }
 
-/*
-        for(item of data.items) {
-            // console.log(item);
-            playlistItems.push({
-                id: item.id,
-                title: item.snippet.title,
-                description: item.snippet.description,
-                videoId: item.snippet.resourceId.videoId
-            });
-        }
-
-        playlistItems.sort(
-            function(a, b) {
-                return (a.title.toLowerCase() > b.title.toLowerCase()) ? 1 : ((b.title.toLowerCase() > a.title.toLowerCase()) ? -1 : 0);
-            }
-        );
-*/
     };
 
-    retrieve = (nextPageToken) => {
+    retrieveVideos = (nextPageToken) => {
         console.log("Videos.retrieve", this.state.playlistId, nextPageToken);
-        // let request = buildApiRequest(
-        //     'GET',
-        //     '/youtube/v3/playlistItems',
-        //     {
-        //         'maxResults': '50',
-        //         'part': 'snippet,contentDetails',
-        //         'playlistId': this.state.playlistId,
-        //         'pageToken': nextPageToken
-        //     });
-        executeRequest(buildPlaylistsRequest(nextPageToken), this.storePlaylists);
-        executeRequest(buildPlaylistItemsRequest(this.state.playlistId, nextPageToken), (data) => this.store(data, nextPageToken));
+        executeRequest(buildPlaylistItemsRequest(this.state.playlistId, nextPageToken), (data) => this.storeVideos(data, nextPageToken));
     };
+
+    retrievePlaylists = () => {
+        console.log("Videos.retrievePlayLists");
+        executeRequest(buildPlaylistsRequest(), this.storePlaylists);
+    };
+
 
     removeSuccess = (videoItemId) => {
         console.log("Videos.removeSuccess", videoItemId);
@@ -183,27 +167,33 @@ class Videos extends Component {
         this.setState({ moveToPlaylistId: event.target.value });
     };
 
+    updateFilter = (event) => {
+        console.log("Videos.updateFilter", event.target.value);
+        let f = event.target.value;
+        this.setState({ filter: f });
+    };
+
     componentDidMount() {
         console.log("Videos.componentDidMount");
-        this.retrieve();
-        // this.retrievePlaylists();
+        this.retrieveVideos();
+        this.retrievePlaylists();
     }
 
     render() {
 
-        const { isAuthorized, videos, playlists, moveToPlaylistId } = this.state;
+        const { isAuthorized, videos, playlists, moveToPlaylistId, filter } = this.state;
 
-        console.log("Videos.render", videos);
+        console.log("Videos.render");
 
         if (!isAuthorized) {
             return <div></div>
         } else {
             if (videos) {
                 return (
-                    <div>
+                    <div className="videos">
                         <h2>list of videos</h2>
                         <h3>{videos.length} videos</h3>
-                        <div>
+                        <div className="playlist-selector">
                             move to playlist
                             {
                                 playlists &&
@@ -217,9 +207,12 @@ class Videos extends Component {
                                 </select>
                             }
                         </div>
+                        <div className="filter">
+                            filter: <input type="text" onKeyUp={this.updateFilter} />
+                        </div>
                         <div>
                             {
-                                videos.map((video, index) => {
+                                videos.filter((video) => video.snippet.title.indexOf(filter) > -1).map((video, index) => {
                                     return (
                                         <div key={index}>
                                             {video.snippet.title}
