@@ -53,20 +53,6 @@ class Playlists extends Component {
 
     retrieve = (nextPageToken) => {
         console.log("Playlists.retrieve", nextPageToken);
-        // // if (!this.state.google_api) return;
-        //
-        // let request = buildApiRequest(
-        //     'GET',
-        //     '/youtube/v3/playlists',
-        //     {
-        //         // 'channelId': 'UCE0q36_agQAeb4G3PXivkew',
-        //         'mine': 'true',
-        //         'maxResults': '50',
-        //         'part': 'snippet,contentDetails',
-        //         'onBehalfOfContentOwner': '',
-        //         'onBehalfOfContentOwnerChannel': '',
-        //         'pageToken': nextPageToken
-        //     });
         executeRequest(buildPlaylistsRequest(nextPageToken), this.store);
     };
 
@@ -153,7 +139,7 @@ class Playlists extends Component {
                     </div>
                 )
             } else {
-                return <div>Retrieving the list of playlists...</div>
+                return <div>Retrieving the playlists...</div>
             }
         }
 

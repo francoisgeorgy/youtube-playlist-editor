@@ -33,9 +33,10 @@ class Videos extends Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        console.log("Videos.componentDidUpdate");
+        console.log(`Videos.componentDidUpdate, playlistId=${this.state.playlistId}, prev=${prevState.playlistId}`, this.state);
         // At this point, we're in the "commit" phase, so it's safe to load the new data.
-        if (this.state.isAuthorized && this.state.playlistId && this.state.videos === null) {
+        // if (this.state.isAuthorized && this.state.playlistId && ((this.state.videos === null) || (this.state.videos.length === 0))) {
+        if (this.state.isAuthorized && this.state.playlistId && (this.state.videos === null)) {
             // !!! only retrieve data if state.videos is empty; otherwise this will generate an endless loop.
             this.retrieveVideos();
         }
@@ -63,6 +64,8 @@ class Videos extends Component {
 
         if (!data) return;
 
+        console.log("Videos.storeVideos", data);
+
         let list = data.items;
         list.sort(
             function(a, b) {
@@ -71,10 +74,10 @@ class Videos extends Component {
         );
 
         if (currentToken === undefined || !currentToken) {
-            console.log("Videos.store: set new videos list");
+            console.log("Videos.storeVideos: set new videos list");
             this.setState({videos: list});
         } else {
-            console.log("Videos.store: append videos to current list");
+            console.log("Videos.storeVideos: append videos to current list");
             this.setState(prevState => ({
                 videos: [...prevState.videos, ...list]
                 // videos: prevState.videos.concat(list)
@@ -82,14 +85,14 @@ class Videos extends Component {
         }
 
         if (data.nextPageToken) {
-            console.log('Videos.store: get next page with token ' + data.nextPageToken);
+            console.log('Videos.storeVideos: get next page with token ' + data.nextPageToken);
             this.retrieveVideos(data.nextPageToken);
         }
 
     };
 
     retrieveVideos = (nextPageToken) => {
-        console.log("Videos.retrieve", this.state.playlistId, nextPageToken);
+        console.log(`Videos.retrieveVideos, playlistId=${this.state.playlistId}, pageToken=${nextPageToken}`);
         executeRequest(buildPlaylistItemsRequest(this.state.playlistId, nextPageToken), (data) => this.storeVideos(data, nextPageToken));
     };
 

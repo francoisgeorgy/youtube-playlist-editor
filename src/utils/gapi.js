@@ -102,6 +102,7 @@
 
     export function buildPlaylistsRequest(pageToken) {
         // console.log("buildPlaylistsRequests", pageToken);
+        // console.log('GET /youtube/v3/playlists');
         return buildApiRequest(
             'GET',
             '/youtube/v3/playlists',
@@ -117,6 +118,7 @@
 
 
     export function buildPlaylistItemsRequest(playlistId, pageToken) {
+        // console.log('GET /youtube/v3/playlistItems');
         return buildApiRequest(
             'GET',
             '/youtube/v3/playlistItems',
@@ -127,3 +129,15 @@
                 'pageToken': pageToken
             });
     }
+
+    export function buildChannelsRequest() {
+        // console.log("buildChannelsRequests", pageToken);
+        return buildApiRequest(
+            'GET',
+            '/youtube/v3/channels',
+            {
+                'mine': 'true',
+                'part': 'contentDetails'
+            });
+    }
+

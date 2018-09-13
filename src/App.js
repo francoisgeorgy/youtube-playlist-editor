@@ -3,6 +3,7 @@ import './App.css';
 import Playlists from "./components/Playlists";
 import Videos from "./components/Videos";
 import { BrowserRouter as Router, Route, Link, Switch } from "react-router-dom";
+import Channels from "./components/Channels";
 
 
 /*
@@ -184,6 +185,7 @@ class App extends Component {
                                 <button onClick={this.authorize}>Authorize</button>
                             </span>
                     }
+                    {isAuthorized && <Link className="header-link" to="/channels">Channels</Link>}
                     {isAuthorized && <Link className="header-link" to="/playlists">Playlists</Link>}
                     </div>
                     <div className="content">
@@ -196,11 +198,14 @@ class App extends Component {
                         <Switch>
                             {/*<Route exact={true} path="/" component={Home}/>*/}
                             {/*<Route path="/playlists" component={Playlists} />*/}
-                            <Route path="/videos/:playlistid" render={(props) => (
-                                <Videos {...props} isAuthorized={isAuthorized} />
+                            <Route path='/channels' render={(props) => (
+                                <Channels {...props} isAuthorized={isAuthorized} />
                             )} />
                             <Route path='/playlists' render={(props) => (
                                 <Playlists {...props} isAuthorized={isAuthorized} />
+                            )} />
+                            <Route path="/videos/:playlistid" render={(props) => (
+                                <Videos {...props} isAuthorized={isAuthorized} />
                             )} />
                         </Switch>
                     </div>
