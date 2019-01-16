@@ -58,7 +58,7 @@ class App extends Component {
         window.gapi.client.init({
             'clientId': '1035406715321-fu4ktringpl82201dm2g9fm674akd203.apps.googleusercontent.com',
             'discoveryDocs': ['https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest'],
-            'scope': 'https://www.googleapis.com/auth/youtube.force-ssl https://www.googleapis.com/auth/youtubepartner',
+            'scope': 'https://www.googleapis.com/auth/youtube.force-ssl https://www.googleapis.com/auth/youtubepartner' //,
             // 'access_type': 'offline'
         }).then(() => {
 
