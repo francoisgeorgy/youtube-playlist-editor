@@ -1,5 +1,11 @@
 import React, {Component} from "react";
-import {buildApiRequest, buildPlaylistsRequest, buildPlaylistItemsRequest, executeRequest} from "../utils/gapi";
+import {
+    buildApiRequest,
+    buildPlaylistsRequest,
+    buildPlaylistItemsRequest,
+    executeRequest,
+    executeRequestsInBatch
+} from "../utils/gapi";
 import "./Videos.css";
 
 /**
@@ -136,6 +142,10 @@ class Videos extends Component {
     //     this.remove(videoItemId);
     // };
 
+    createError = (error) => {
+        console.log("Videos.insertError", error);
+    };
+
     insertError = (error) => {
         console.log("Videos.insertError", error);
     };
@@ -163,6 +173,29 @@ class Videos extends Component {
             });
         //executeRequest(request, () => { this.insertSuccess(videoItemId) }, this.insertError);
         executeRequest(request, () => { this.remove(videoItemId) }, this.insertError);
+    };
+
+    moveVisible = () => {
+        console.log("Videos.moveVisible");
+        let requests = [];
+        this.state.videos.filter(
+            (video) => video.snippet.title.indexOf(this.state.filter) > -1).map(video => {
+                console.log("moveVisible", video.id, video.contentDetails.videoId, this.state.moveToPlaylistId);
+                requests.push(buildApiRequest(
+                    'POST',
+                    '/youtube/v3/playlistItems',
+                    {
+                        'part': 'snippet',
+                        'onBehalfOfContentOwner': ''
+                    }, {
+                        'snippet.playlistId': this.state.moveToPlaylistId,
+                        'snippet.resourceId.kind': 'youtube#video',
+                        'snippet.resourceId.videoId': video.contentDetails.videoId,
+                        'snippet.position': ''
+                    }));
+            }
+        );
+        executeRequestsInBatch(requests, () => console.log("batch ok"), () => console.log("batch fail"));
     };
 
     setMoveToList = (event) => {
@@ -197,7 +230,7 @@ class Videos extends Component {
                         <h2>list of videos</h2>
                         <h3>{videos.length} videos</h3>
                         <div className="playlist-selector">
-                            move to playlist
+                            target playlist:
                             {
                                 playlists &&
                                 <select onChange={this.setMoveToList}>
@@ -209,6 +242,9 @@ class Videos extends Component {
                                 ))}
                                 </select>
                             }
+                        </div>
+                        <div>
+                            <button onClick={this.moveVisible}>move visible to target playlist</button>
                         </div>
                         <div className="filter">
                             filter: <input type="text" onKeyUp={this.updateFilter} />

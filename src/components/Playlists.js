@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {buildPlaylistsRequest, executeRequest} from "../utils/gapi";
+import {buildApiRequest, buildPlaylistsRequest, executeRequest} from "../utils/gapi";
 import { Link } from "react-router-dom";
 import "./Playlists.css";
 
@@ -14,6 +14,7 @@ class Playlists extends Component {
         this.state = {
             isAuthorized: false,
             playlists: null,
+            newPlaylist: null,
             filter: ''
         };
     }
@@ -39,6 +40,30 @@ class Playlists extends Component {
         }
     }
 
+    newPlaylistName = (event) => {
+        console.log("Playlists.newPlaylistName");
+        this.setState({ newPlaylist: event.target.value });
+    };
+
+    createPlaylist = () => {
+        if (!this.state.newPlaylist) return;
+        let request = buildApiRequest(
+            'POST',
+            '/youtube/v3/playlists',
+            {
+                'part': 'snippet,status',
+                'onBehalfOfContentOwner': ''
+            }, {
+                'snippet.title': this.state.newPlaylist,
+                'snippet.description': '',
+                'snippet.tags[]': '',
+                'snippet.defaultLanguage': '',
+                'status.privacyStatus': 'private'   // unlisted, private, public    https://developers.google.com/youtube/v3/docs/playlists#resource
+            });
+        //executeRequest(request, () => { this.insertSuccess(videoItemId) }, this.insertError);
+        executeRequest(request, (resp) => { console.log("created playlist", resp); this.retrieve() }, this.createError);
+    };
+
     store = (data) => {
         console.log("Playlists.store");
         if (!data) return;
@@ -63,6 +88,10 @@ class Playlists extends Component {
         } else {
             this.setState({ filter: event.target.value });
         }
+    };
+
+    refresh = () => {
+        this.retrieve();
     };
 
     componentDidMount() {
@@ -111,7 +140,7 @@ class Playlists extends Component {
 
     render() {
 
-        const { isAuthorized, playlists, filter } = this.state;
+        const { isAuthorized, playlists, newPlaylist, filter } = this.state;
 
         console.log("Playlists render");
 
@@ -122,6 +151,10 @@ class Playlists extends Component {
                 return (
                     <div>
                         <h2>list of playlists</h2>
+                        <button onClick={this.refresh}>refresh</button>
+                        <div>
+                            new playlist: <input type="text" value={newPlaylist} onChange={this.newPlaylistName} /> <button onClick={this.createPlaylist}>create</button>
+                        </div>
                         <div className="filter">
                             filter: <input type="text" onKeyUp={this.updateFilter} />
                         </div>
