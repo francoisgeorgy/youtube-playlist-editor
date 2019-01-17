@@ -41,85 +41,6 @@
         return params;
     }
 
-    export function executeRequest(request, callback, callbackError) {
-
-        console.log("executeRequest begin");
-
-        if (request === undefined || request === null) {
-            console.log("executeRequest request is undefined or null");
-            return;
-        }
-
-        request.execute(function(data) {
-            // console.log(data);
-            if (data) {
-                if (data.error) {
-                    console.warn(`${data.error.code} ${data.error.message}`);
-                    if (callbackError) {
-                        callbackError(data.error);
-                    }
-                } else {
-                    // console.log('executeRequest calling callback');
-                    if (callback) callback(data);
-                    // if (data.nextPageToken) {
-                    //     console.log('get next page', data.nextPageToken);
-                    //     defineRequest(data.nextPageToken);
-                    // }
-                }
-            } else {
-                if (callback) callback();
-            }
-        });
-
-        console.log("executeRequest end");
-
-    }
-
-
-    /**
-     *
-     * @param requests array of requests
-     */
-    export function executeRequestsInBatch(requests, callback, callbackError) {
-
-        console.log("executeRequestsInBatch", requests.length, callback, callbackError);
-
-        let batch = window.gapi.client.newBatch();
-
-        console.log("executeRequestsInBatch newBatch", batch);
-
-        for (let i = 0; i < requests.length; i++) {
-            console.log("executeRequestsInBatch, add req" + i);
-            batch.add(requests[i]);
-        }
-
-        console.log("executeRequestsInBatch, will execute", batch);
-
-        batch.execute(function(responseMap, rawBatchResponse, callback, callbackError) {
-            console.log("batch.execute callback", responseMap, rawBatchResponse);
-/*
-            if (data) {
-                if (data.error) {
-                    console.warn(`batch.execute callback: ${data.error.code} ${data.error.message}`);
-                    // if (callbackError) {
-                    //     callbackError(data.error);
-                    // }
-                } else {
-                    console.log('batch.execute callback: no error');
-                    // if (callback) callback(data);
-                    // if (data.nextPageToken) {
-                    //     console.log('get next page', data.nextPageToken);
-                    //     defineRequest(data.nextPageToken);
-                    // }
-                }
-            } else {
-                if (callback) callback();
-            }
-*/
-        });
-
-    }
-
     export function buildApiRequest(requestMethod, path, params, properties) {
 
         console.log("buildApiRequest", requestMethod, path, params, properties);
@@ -197,3 +118,122 @@
             });
     }
 
+
+
+    export function executeRequest(request, callback, callbackError) {
+
+        console.log("executeRequest begin");
+
+        if (request === undefined || request === null) {
+            console.log("executeRequest request is undefined or null");
+            return;
+        }
+/*
+        request.execute(function(data) {
+            // console.log(data);
+            if (data) {
+                if (data.error) {
+                    console.warn(`${data.error.code} ${data.error.message}`);
+                    if (callbackError) {
+                        callbackError(data.error);
+                    }
+                } else {
+                    // console.log('executeRequest calling callback');
+                    if (callback) callback(data);
+                    // if (data.nextPageToken) {
+                    //     console.log('get next page', data.nextPageToken);
+                    //     defineRequest(data.nextPageToken);
+                    // }
+                }
+            } else {
+                if (callback) callback();
+            }
+        });
+*/
+
+        // https://developers.google.com/api-client-library/javascript/reference/referencedocs#gapiclientbatch
+        // https://developers.google.com/api-client-library/javascript/features/promises
+        // gapi.client.Request.then(onFulfilled, onRejected, context)
+
+        request.then(
+            // onFulfilled handler:
+            function(response) {
+
+                // response:
+                //     An object containing information about the HTTP response.
+                //     Name	        Type	            Description
+                //     result	    *	                The JSON-parsed result. false if not JSON-parseable.
+                //     body	        string	            The raw response string.
+                //     headers	    object | undefined	The map of HTTP response headers.
+                //     status	    number | undefined	HTTP status.
+                //     statusText	string | undefined	HTTP status text.
+
+                console.log("executeRequest promise onFulfilled handler", response);
+
+                if (callback) callback(response.result);
+
+                // if (data.error) {
+                //     console.warn(`${data.error.code} ${data.error.message}`);
+                //     if (callbackError) {
+                //         callbackError(data.error);
+                //     }
+                // } else {
+                //     // console.log('executeRequest calling callback');
+                //     if (callback) callback(data);
+                //     // if (data.nextPageToken) {
+                //     //     console.log('get next page', data.nextPageToken);
+                //     //     defineRequest(data.nextPageToken);
+                //     // }
+                // }
+
+            }
+        );
+
+        console.log("executeRequest end");
+
+    }
+
+
+    /**
+     *
+     * @param requests array of requests
+     */
+    export function executeRequestsInBatch(requests, callback, callbackError) {
+
+        console.log("executeRequestsInBatch", requests.length, callback, callbackError);
+
+        let batch = window.gapi.client.newBatch();
+
+        console.log("executeRequestsInBatch newBatch", batch);
+
+        for (let i = 0; i < requests.length; i++) {
+            console.log("executeRequestsInBatch, add req" + i);
+            batch.add(requests[i]);
+        }
+
+        console.log("executeRequestsInBatch, will execute", batch);
+
+        batch.execute(function(responseMap, rawBatchResponse, callback, callbackError) {
+            console.log("batch.execute callback", responseMap, rawBatchResponse);
+            /*
+                        if (data) {
+                            if (data.error) {
+                                console.warn(`batch.execute callback: ${data.error.code} ${data.error.message}`);
+                                // if (callbackError) {
+                                //     callbackError(data.error);
+                                // }
+                            } else {
+                                console.log('batch.execute callback: no error');
+                                // if (callback) callback(data);
+                                // if (data.nextPageToken) {
+                                //     console.log('get next page', data.nextPageToken);
+                                //     defineRequest(data.nextPageToken);
+                                // }
+                            }
+                        } else {
+                            if (callback) callback();
+                        }
+            */
+        });
+
+    }
