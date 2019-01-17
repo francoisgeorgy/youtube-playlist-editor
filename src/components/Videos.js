@@ -4,7 +4,7 @@ import {
     buildPlaylistsRequest,
     buildPlaylistItemsRequest,
     executeRequest,
-    executeRequestsInBatch, buildPlaylistNameRequest, insertInPlaylist
+    executeRequestsInBatch, buildPlaylistNameRequest, insertInPlaylist, moveIntoPlaylist
 } from "../utils/gapi";
 import "./Videos.css";
 
@@ -224,7 +224,7 @@ class Videos extends Component {
 
         let deleteRequest = buildApiRequest(
             'DELETE',
-            '/youtube/v3/playlistItemsX',
+            '/youtube/v3/playlistItems',
             {
                 'id': videoItemId
             });
@@ -276,19 +276,24 @@ class Videos extends Component {
                 console.log("delete failed", error);
             });
 */
+        let r = null;
+
         console.log("calling insertRequest");
         insertRequest
             .then(function(){
                 console.log("calling deleteRequest");
                 return deleteRequest
                     .then(function(){
-                        console.log("deleteRequest.then")
+                        console.log("deleteRequest.then");
+                        r = 'OK';
                     });
             })
             .catch(function(reason) {
                 console.log("move failed", JSON.stringify(reason));
-                console.log(reason.result ? reason.result.error.message : "unknow reason");
+                r = reason.result ? reason.result.error.message : "unknow reason";
             });
+
+        return r;
 
         // {
         //  "result":{
@@ -308,14 +313,26 @@ class Videos extends Component {
 
 
     movep = (videoItemId, videoId, moveToPlaylistId) => {
-        console.log("Videos.movep", videoItemId, videoId, moveToPlaylistId);
-        insertInPlaylist(videoId, moveToPlaylistId)
+        console.log("movep", videoItemId, videoId, moveToPlaylistId);
+        // insertInPlaylist(videoId, moveToPlaylistId)
+        //     .then(function(response) {
+        //         console.log("movep.insertInPlaylist resovled", response);
+        //     })
+        //     .catch(function(error) {
+        //         console.log("movep.insertInPlaylist rejected");
+        //     });
+
+        // let r = moveIntoPlaylist(videoItemId, videoId, moveToPlaylistId);
+        // console.log("movep, r", r);
+
+        moveIntoPlaylist(videoItemId, videoId, moveToPlaylistId)
             .then(function(response) {
-                console.log("movep.insertInPlaylist resovled", response);
+                console.log("movep.moveIntoPlaylist resolved", response);
             })
-            .catch(function(error) {
-                console.log("movep.insertInPlaylist rejected");
+            .catch(function(reason) {
+                console.log("movep.moveIntoPlaylist rejected", reason);
             });
+
     };
 
 
@@ -410,7 +427,7 @@ class Videos extends Component {
                                         <div key={index}>
                                             {video.snippet.title}
                                             <button onClick={() => this.remove(video.id)}>remove</button>
-                                            {moveToPlaylistId && <button onClick={() => this.move(video.id, video.contentDetails.videoId, moveToPlaylistId)}>move</button>}
+                                            {moveToPlaylistId && <button onClick={() => this.movep(video.id, video.contentDetails.videoId, moveToPlaylistId)}>move</button>}
                                         </div>
                                     )
                                 })

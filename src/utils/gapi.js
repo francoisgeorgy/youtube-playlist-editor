@@ -293,3 +293,70 @@
         });
 
     }
+
+
+
+
+    /**
+     * Move the video to another playlist. The video will be removed from the current playlist.
+     * @param videoItemId ID of the video-item in the current playlist
+     * @param videoId ID of the video
+     */
+    export function moveIntoPlaylist(videoItemId, videoId, moveToPlaylistId) {
+
+        console.log("moveIntoPlaylist", videoItemId, videoId, moveToPlaylistId);
+
+        if (!moveToPlaylistId) return;
+
+        let insertRequest = buildApiRequest(
+            'POST',
+            '/youtube/v3/playlistItems',
+            {
+                'part': 'snippet'
+            }, {
+                'snippet.playlistId': moveToPlaylistId,
+                'snippet.resourceId.kind': 'youtube#video',
+                'snippet.resourceId.videoId': videoId
+            });
+
+        let deleteRequest = buildApiRequest(
+            'DELETE',
+            '/youtube/v3/playlistItems',
+            {
+                'id': videoItemId
+            });
+
+        return new Promise(function(resolve, reject) {
+            console.log("moveIntoPlaylist: calling insertRequest");
+            insertRequest
+                .then(function () {
+                    console.log("moveIntoPlaylist: calling deleteRequest");
+                    return deleteRequest
+                        .then(function () {
+                            console.log("moveIntoPlaylist: deleteRequest.then, resolve");
+                            resolve('OK');
+                        });
+                })
+                .catch(function (reason) {
+                    console.log("moveIntoPlaylist: move failed, reject", JSON.stringify(reason));
+                    reject(reason.result ? reason.result.error.message : "unknow reason");
+                });
+        });
+
+        // {
+        //  "result":{
+        //      "error":{
+        //          "errors":[
+        //              {"domain":"youtube.playlistItem","reason":"playlistIdRequired",
+        //              "message":"Playlist id not specified."}],
+        //          "code":400,
+        //          "message":"Playlist id not specified."}},
+        //          "body":"{\n \"error\": {\n  \"errors\": [\n   {\n    \"domain\": \"youtube.playlistItem\",\n    \"reason\": \"playlistIdRequired\",\n    \"message\": \"Playlist id not specified.\"\n   }\n  ],\n  \"code\": 400,\n  \"message\": \"Playlist id not specified.\"\n }\n}\n",
+        //          "headers":{"date":"Thu, 17 Jan 2019 13:26:34 GMT","content-encoding":"gzip","server":"GSE","content-type":"application/json; charset=UTF-8","vary":"Origin, X-Origin","cache-control":"private, max-age=0","content-length":"150","expires":"Thu, 17 Jan 2019 13:26:34 GMT"},
+        //          "status":400,
+        //          "statusText":null}
+
+
+    }
+
+
