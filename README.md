@@ -11,7 +11,6 @@
 
 - https://developers.google.com/identity/protocols/googlescopes#youtubev3
 
-
     https://www.googleapis.com/auth/youtube	Manage your YouTube account
     https://www.googleapis.com/auth/youtube.force-ssl	Manage your YouTube account
     https://www.googleapis.com/auth/youtube.readonly	View your YouTube account
@@ -24,8 +23,10 @@
 
 - https://developers.google.com/youtube/v3/docs/
 - https://developers.google.com/youtube/v3/sample_requests
-
+- https://developers.google.com/apis-explorer/#p/youtube/v3/
 - https://developers.google.com/apis-explorer/#p/youtube/v3/youtube.playlistItems.list?part=contentDetails&playlistId=WL&_h=1&
+
+- https://github.com/youtube/api-samples/tree/master/javascript
 
 #### Watch Later playlist:
 
@@ -43,3 +44,7 @@ In addition, requests to retrieve playlist details (playlists.list) or playlist 
 channel's watch history or watch later playlist now return empty lists. This behavior is true for the new values, HL and WL,
  as well as for any watch history or watch later playlist IDs that your API Client may have already stored. 
  
+#### Batch processing
+
+https://github.com/google/google-api-javascript-client/issues/408
+

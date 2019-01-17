@@ -42,7 +42,8 @@
     }
 
     export function executeRequest(request, callback, callbackError) {
-        // console.log("executeRequest");
+
+        console.log("executeRequest begin");
 
         if (request === undefined || request === null) {
             console.log("executeRequest request is undefined or null");
@@ -69,6 +70,9 @@
                 if (callback) callback();
             }
         });
+
+        console.log("executeRequest end");
+
     }
 
 
@@ -126,9 +130,15 @@
         }
 
         params = removeEmptyParams(params);
+
+        console.log("buildApiRequest params", params);
+
         let request;
         if (properties) {
             let resource = createResource(properties);
+
+            console.log("buildApiRequest resource", resource);
+
             request = window.gapi.client.request({
                 'body': resource,
                 'method': requestMethod,
