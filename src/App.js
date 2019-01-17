@@ -32,10 +32,10 @@ class App extends Component {
         console.log("setSigninStatus", this.state.google_api);
         if (this.state.google_api) {
 
-            console.log("* instance.currentUser.get()");
+            // console.log("* instance.currentUser.get()");
             let user = this.state.google_api.currentUser.get();
 
-            console.log("setSigninStatus: user", user);
+            // console.log("setSigninStatus: user", user);
 
             let isAuthorized = user.hasGrantedScopes('https://www.googleapis.com/auth/youtube.force-ssl https://www.googleapis.com/auth/youtubepartner');
             this.setState({
@@ -46,7 +46,7 @@ class App extends Component {
     };
 
     updateSigninStatus = () => {
-        console.log("updateSigninStatus");
+        // console.log("updateSigninStatus");
         this.setSigninStatus();
     };
 
@@ -54,7 +54,7 @@ class App extends Component {
 
         console.log("initClient");
 
-        console.log("* gapi.client.init");
+        // console.log("* gapi.client.init");
         window.gapi.client.init({
             'clientId': '1035406715321-fu4ktringpl82201dm2g9fm674akd203.apps.googleusercontent.com',
             'discoveryDocs': ['https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest'],
@@ -64,9 +64,9 @@ class App extends Component {
 
             console.log("initClient: success");
 
-            console.log("* gapi.auth2.getAuthInstance");
+            // console.log("* gapi.auth2.getAuthInstance");
             let inst = window.gapi.auth2.getAuthInstance(); // https://developers.google.com/api-client-library/javascript/reference/referencedocs#gapiauth2getauthinstance
-            console.log("initClient: google_api", inst);
+            // console.log("initClient: google_api", inst);
 
             // Listen for sign-in state changes
             inst.isSignedIn.listen(this.updateSigninStatus);
@@ -85,16 +85,16 @@ class App extends Component {
 
         let auth = window.gapi.auth2.getAuthInstance();
         auth.grantOfflineAccess().then(function(resp) {
-            console.log("authorize grantOfflineAccess",resp);
+            // console.log("authorize grantOfflineAccess",resp);
             var auth_code = resp.code;
         });
 
 
-        console.log("* instance.signIn");
+        // console.log("* instance.signIn");
         this.state.google_api.signIn().then(
 
             (user) => {
-                console.log("signIn return, user", user);
+                // console.log("signIn return, user", user);
 
 /*
 
@@ -111,11 +111,11 @@ class App extends Component {
                 });
 */
 
-                console.log("* user.getBasicProfile");
+                // console.log("* user.getBasicProfile");
                 let p = user.getBasicProfile();
-                console.log("signIn return, user profile", p);
+                // console.log("signIn return, user profile", p);
                 let isAuthorized = user.hasGrantedScopes('https://www.googleapis.com/auth/youtube.force-ssl https://www.googleapis.com/auth/youtubepartner');
-                console.log("signIn return, isAuthorized=" + isAuthorized);
+                // console.log("signIn return, isAuthorized=" + isAuthorized);
                 this.setState({
                     user: user,
                     userProfile: p,
@@ -126,7 +126,7 @@ class App extends Component {
     };
 
     grantAccess = () => {
-        console.log("grantAccess");
+        // console.log("grantAccess");
 
         let auth = window.gapi.auth2.getAuthInstance();
         // let user = auth.currentUser.get();
@@ -153,7 +153,7 @@ class App extends Component {
     };
 
     componentDidMount() {
-        console.log("gapi", window.gapi);
+        // console.log("gapi", window.gapi);
         // https://developers.google.com/api-client-library/javascript/reference/referencedocs
 
         // Here we use gapi.load('client:auth2', ...) to load both the client module (for dealing with API requests)
@@ -161,13 +161,13 @@ class App extends Component {
         // if it is needed. If you are sure your app needs auth, loading the two modules 'client:auth2' together
         // before you call gapi.client.init will save one script load request.
 
-        console.log("* gapi.load");
+        // console.log("* gapi.load");
         window.gapi.load('client:auth2', this.initClient);
 
     }
 
     render() {
-        console.log("render", this.state);
+        // console.log("render", this.state);
 
         const { isAuthorized, userProfile } = this.state;
 

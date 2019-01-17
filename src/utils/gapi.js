@@ -43,7 +43,7 @@
 
     export function buildApiRequest(requestMethod, path, params, properties) {
 
-        console.log("buildApiRequest", requestMethod, path, params, properties);
+        // console.log("buildApiRequest", requestMethod, path, params, properties);
 
         if (window.gapi.client === undefined || window.gapi.client === null) {
             console.log("buildApiRequest window.gapi.client is undefined or null");
@@ -52,13 +52,13 @@
 
         params = removeEmptyParams(params);
 
-        console.log("buildApiRequest params", params);
+        // console.log("buildApiRequest params", params);
 
         let request;
         if (properties) {
             let resource = createResource(properties);
 
-            console.log("buildApiRequest resource", resource);
+            // console.log("buildApiRequest resource", resource);
 
             request = window.gapi.client.request({
                 'body': resource,
@@ -76,6 +76,35 @@
         return request;
     }
 
+    export function buildPlaylistNameRequest(id) {
+        // console.log("buildPlaylistsRequests", pageToken);
+        // console.log('GET /youtube/v3/playlists');
+
+/*
+        console.log("buildPlaylistNameRequest", id, {
+            'id': id,
+            // 'mine': 'true',
+            // 'maxResults': '50',
+            'part': 'snippet,contentDetails'    //,
+            // 'onBehalfOfContentOwner': '',
+            // 'onBehalfOfContentOwnerChannel': '',
+            // 'pageToken': pageToken
+        });
+*/
+
+        return buildApiRequest(
+            'GET',
+            '/youtube/v3/playlists',
+            {
+                'id': id,
+                // 'mine': 'true',
+                // 'maxResults': '50',
+                'part': 'snippet,contentDetails'    //,
+                // 'onBehalfOfContentOwner': '',
+                // 'onBehalfOfContentOwnerChannel': '',
+                // 'pageToken': pageToken
+            });
+    }
 
     export function buildPlaylistsRequest(pageToken) {
         // console.log("buildPlaylistsRequests", pageToken);
@@ -92,7 +121,6 @@
                 'pageToken': pageToken
             });
     }
-
 
     export function buildPlaylistItemsRequest(playlistId, pageToken) {
         // console.log('GET /youtube/v3/playlistItems');
@@ -120,9 +148,37 @@
 
 
 
+
+    export function insertInPlaylist(videoId, moveToPlaylistId) {
+
+        let insertRequest = buildApiRequest(
+            'POST',
+            '/youtube/v3/playlistItems',
+            {
+                'part': 'snippet'   //,
+            }, {
+                'snippet.playlistId': moveToPlaylistId,
+                'snippet.resourceId.kind': 'youtube#video',
+                'snippet.resourceId.videoId': videoId
+            });
+
+        return new Promise(function(resolve, reject) {
+            insertRequest
+                .then(function(response){
+                    resolve(response.result);
+                })
+                .catch(function(){
+                    reject();
+                })
+        });
+
+    }
+
+
+
     export function executeRequest(request, callback, callbackError) {
 
-        console.log("executeRequest begin");
+        // console.log("executeRequest begin");
 
         if (request === undefined || request === null) {
             console.log("executeRequest request is undefined or null");
@@ -168,7 +224,7 @@
                 //     status	    number | undefined	HTTP status.
                 //     statusText	string | undefined	HTTP status text.
 
-                console.log("executeRequest promise onFulfilled handler", response);
+                // console.log("executeRequest promise onFulfilled handler", response);
 
                 if (callback) callback(response.result);
 
@@ -189,7 +245,7 @@
             }
         );
 
-        console.log("executeRequest end");
+        // console.log("executeRequest end");
 
     }
 

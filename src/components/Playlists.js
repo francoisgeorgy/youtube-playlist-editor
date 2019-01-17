@@ -14,7 +14,7 @@ class Playlists extends Component {
         this.state = {
             isAuthorized: false,
             playlists: null,
-            newPlaylist: null,
+            newPlaylist: '',
             filter: ''
         };
     }
@@ -160,7 +160,7 @@ class Playlists extends Component {
                         </div>
                         <div>
                             {
-                                playlists.filter((p) => p.snippet.title.indexOf(filter) > -1).map((playlist, index) => {
+                                playlists.filter((p) => p.snippet.title.toLowerCase().indexOf(filter.toLowerCase()) > -1).map((playlist, index) => {
                                     // console.log(JSON.stringify(playlist));
                                     return <div key={index} >
                                             <Link to={`/videos/${playlist.id}`}>{playlist.snippet.title} ({playlist.contentDetails.itemCount} videos)</Link>

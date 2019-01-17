@@ -4,7 +4,7 @@ import {
     buildPlaylistsRequest,
     buildPlaylistItemsRequest,
     executeRequest,
-    executeRequestsInBatch
+    executeRequestsInBatch, buildPlaylistNameRequest, insertInPlaylist
 } from "../utils/gapi";
 import "./Videos.css";
 
@@ -15,9 +15,10 @@ class Videos extends Component {
 
     constructor(props) {
         super(props);
-        console.log("Videos.constructor", props);
+        // console.log("Videos.constructor", props);
         this.state = {
             isAuthorized: false,
+            playlistName: null,
             playlistId: props.match.params.playlistid,
             videos: null,
             playlists: null,
@@ -27,21 +28,27 @@ class Videos extends Component {
     }
 
     static getDerivedStateFromProps(props, state) {
-        console.log("Videos.getDerivedStateFromProps", props);
+        // console.log("Videos.getDerivedStateFromProps", props);
         if (props.isAuthorized !== state.isAuthorized) {
             return {
                 isAuthorized: props.isAuthorized
             };
         }
-
         // No state update necessary
         return null;
     }
 
     componentDidUpdate(prevProps, prevState) {
-        console.log(`Videos.componentDidUpdate, playlistId=${this.state.playlistId}, prev=${prevState.playlistId}`, this.state);
+        // console.log(`Videos.componentDidUpdate, playlistId=${this.state.playlistId}, prev=${prevState.playlistId}`, this.state);
+
         // At this point, we're in the "commit" phase, so it's safe to load the new data.
         // if (this.state.isAuthorized && this.state.playlistId && ((this.state.videos === null) || (this.state.videos.length === 0))) {
+
+        if (this.state.isAuthorized && this.state.playlistName === null) {
+            // !!! only retrieve data if state.playlistName is empty; otherwise this will generate an endless loop.
+            this.retrievePlaylistName();
+        }
+
         if (this.state.isAuthorized && this.state.playlistId && (this.state.videos === null)) {
             // !!! only retrieve data if state.videos is empty; otherwise this will generate an endless loop.
             this.retrieveVideos();
@@ -53,7 +60,7 @@ class Videos extends Component {
     }
 
     storePlaylists = (data) => {
-        console.log("Videos.storePlayLists", data.items);
+        // console.log("Videos.storePlayLists", data.items);
         if (!data) return;
         let list = data.items;
         list.sort(
@@ -66,11 +73,11 @@ class Videos extends Component {
 
     storeVideos = (data, currentToken) => {
 
-        console.log("Videos.storeVideos", currentToken);
+        // console.log("Videos.storeVideos", currentToken);
 
         if (!data) return;
 
-        console.log("Videos.storeVideos", data);
+        // console.log("Videos.storeVideos", data);
 
         let list = data.items;
         list.sort(
@@ -80,10 +87,10 @@ class Videos extends Component {
         );
 
         if (currentToken === undefined || !currentToken) {
-            console.log("Videos.storeVideos: set new videos list");
+            // console.log("Videos.storeVideos: set new videos list");
             this.setState({videos: list});
         } else {
-            console.log("Videos.storeVideos: append videos to current list");
+            // console.log("Videos.storeVideos: append videos to current list");
             this.setState(prevState => ({
                 videos: [...prevState.videos, ...list]
                 // videos: prevState.videos.concat(list)
@@ -91,19 +98,60 @@ class Videos extends Component {
         }
 
         if (data.nextPageToken) {
-            console.log('Videos.storeVideos: get next page with token ' + data.nextPageToken);
+            // console.log('Videos.storeVideos: get next page with token ' + data.nextPageToken);
             this.retrieveVideos(data.nextPageToken);
         }
 
     };
 
+    updatePlaylistName = (playlistName) => {
+        // console.log(playlistName);
+        this.setState({playlistName})
+    };
+
+    retrievePlaylistName = () => {
+
+        if (!this.state.playlistId) {
+            console.warn("state.playlistId is empty");
+            return;
+        }
+
+        let req = buildPlaylistNameRequest(this.state.playlistId);
+
+        if (!req) {
+            console.warn("req is null");
+            return;
+        }
+
+
+        req.then(
+            function(response) {
+                // console.log("buildPlaylistNameRequest", response);
+                try {
+                    this.updatePlaylistName(response.result.items[0].snippet.title)
+                } catch (e) {
+                    if (e instanceof TypeError) {
+                        console.log("buildPlaylistNameRequest incomplete response", e);
+                    } else {
+                        console.error("buildPlaylistNameRequest unexpected error", e);
+                    }
+                }
+            },
+            function() {    // onRejected handler
+                console.warn("buildPlaylistNameRequest rejected");
+            },
+            this
+        );
+
+    };
+
     retrieveVideos = (nextPageToken) => {
-        console.log(`Videos.retrieveVideos, playlistId=${this.state.playlistId}, pageToken=${nextPageToken}`);
+        // console.log(`Videos.retrieveVideos, playlistId=${this.state.playlistId}, pageToken=${nextPageToken}`);
         executeRequest(buildPlaylistItemsRequest(this.state.playlistId, nextPageToken), (data) => this.storeVideos(data, nextPageToken));
     };
 
     retrievePlaylists = () => {
-        console.log("Videos.retrievePlayLists");
+        // console.log("Videos.retrievePlayLists");
         executeRequest(buildPlaylistsRequest(), this.storePlaylists);
     };
 
@@ -156,27 +204,124 @@ class Videos extends Component {
      * @param videoId ID of the video
      */
     move = (videoItemId, videoId, moveToPlaylistId) => {
+
         console.log("Videos.move", videoItemId, videoId, moveToPlaylistId);
+
         if (!moveToPlaylistId) return;
 
-        let request = buildApiRequest(
+        let insertRequest = buildApiRequest(
             'POST',
             '/youtube/v3/playlistItems',
             {
-                'part': 'snippet',
-                'onBehalfOfContentOwner': ''
+                'part': 'snippet'   //,
+                // 'onBehalfOfContentOwner': ''
             }, {
                 'snippet.playlistId': moveToPlaylistId,
                 'snippet.resourceId.kind': 'youtube#video',
-                'snippet.resourceId.videoId': videoId,
-                'snippet.position': ''
+                'snippet.resourceId.videoId': videoId   //,
+                // 'snippet.position': ''
             });
+
+        let deleteRequest = buildApiRequest(
+            'DELETE',
+            '/youtube/v3/playlistItemsX',
+            {
+                'id': videoItemId
+            });
+
         //executeRequest(request, () => { this.insertSuccess(videoItemId) }, this.insertError);
-        executeRequest(request, () => { this.remove(videoItemId) }, this.insertError);
+        // executeRequest(request, () => { this.remove(videoItemId) }, this.insertError);
+
+
+        // https://developers.google.com/api-client-library/javascript/reference/referencedocs#gapiclientbatch
+        // https://developers.google.com/api-client-library/javascript/features/promises
+        // gapi.client.Request.then(onFulfilled, onRejected, context)
+
+        // response:
+        //     An object containing information about the HTTP response.
+        //     Name	        Type	            Description
+        //     result	    *	                The JSON-parsed result. false if not JSON-parseable.
+        //     body	        string	            The raw response string.
+        //     headers	    object | undefined	The map of HTTP response headers.
+        //     status	    number | undefined	HTTP status.
+        //     statusText	string | undefined	HTTP status text.
+
+/*
+        insertRequest
+            .then(function(response) {    // onFulfilled handler:
+                console.log("insertRequest promise onFulfilled handler", response);
+                return deleteRequest
+                //},
+                // // onRejected handler:
+                // function () {
+                //     console.log("insertRequest onRejected handler");
+                // },
+                // // context:
+                // this
+            }
+            // , function(reason) {
+            //     console.log("insertRequest promise onRejected handler", reason);
+            // }
+            )
+            .catch(function(error) {
+                console.log("insert failed", error);
+                throw error;    // let the error flow through the full chain.
+            })
+            .then(function(response) {
+                console.log("deleteRequest promise onFulfilled handler", response);
+            }, function(reason) {
+                console.log("deleteRequest promise onRejected handler", reason);
+            })
+            .catch(function(error) {
+                console.log("delete failed", error);
+            });
+*/
+        console.log("calling insertRequest");
+        insertRequest
+            .then(function(){
+                console.log("calling deleteRequest");
+                return deleteRequest
+                    .then(function(){
+                        console.log("deleteRequest.then")
+                    });
+            })
+            .catch(function(reason) {
+                console.log("move failed", JSON.stringify(reason));
+                console.log(reason.result ? reason.result.error.message : "unknow reason");
+            });
+
+        // {
+        //  "result":{
+        //      "error":{
+        //          "errors":[
+        //              {"domain":"youtube.playlistItem","reason":"playlistIdRequired",
+        //              "message":"Playlist id not specified."}],
+        //          "code":400,
+        //          "message":"Playlist id not specified."}},
+        //          "body":"{\n \"error\": {\n  \"errors\": [\n   {\n    \"domain\": \"youtube.playlistItem\",\n    \"reason\": \"playlistIdRequired\",\n    \"message\": \"Playlist id not specified.\"\n   }\n  ],\n  \"code\": 400,\n  \"message\": \"Playlist id not specified.\"\n }\n}\n",
+        //          "headers":{"date":"Thu, 17 Jan 2019 13:26:34 GMT","content-encoding":"gzip","server":"GSE","content-type":"application/json; charset=UTF-8","vary":"Origin, X-Origin","cache-control":"private, max-age=0","content-length":"150","expires":"Thu, 17 Jan 2019 13:26:34 GMT"},
+        //          "status":400,
+        //          "statusText":null}
+
+
     };
+
+
+    movep = (videoItemId, videoId, moveToPlaylistId) => {
+        console.log("Videos.movep", videoItemId, videoId, moveToPlaylistId);
+        insertInPlaylist(videoId, moveToPlaylistId)
+            .then(function(response) {
+                console.log("movep.insertInPlaylist resovled", response);
+            })
+            .catch(function(error) {
+                console.log("movep.insertInPlaylist rejected");
+            });
+    };
+
 
     moveVisible = () => {
         console.log("Videos.moveVisible");
+        /*
         let requests = [];
         this.state.videos.filter(
             (video) => video.snippet.title.indexOf(this.state.filter) > -1).map(video => {
@@ -196,30 +341,38 @@ class Videos extends Component {
             }
         );
         executeRequestsInBatch(requests, () => console.log("batch ok"), () => console.log("batch fail"));
+        */
     };
 
     setMoveToList = (event) => {
-        console.log("Videos.setMoveToList", event.target.value);
+        // console.log("Videos.setMoveToList", event.target.value);
         this.setState({ moveToPlaylistId: event.target.value });
     };
 
     updateFilter = (event) => {
-        console.log("Videos.updateFilter", event.target.value);
+        // console.log("Videos.updateFilter", event.target.value);
         let f = event.target.value;
         this.setState({ filter: f });
     };
 
-    componentDidMount() {
-        console.log("Videos.componentDidMount");
+    refresh = () => {
+        this.retrievePlaylistName();
         this.retrieveVideos();
         this.retrievePlaylists();
+    };
+
+
+    componentDidMount() {
+        console.log("Videos.componentDidMount");
+        this.refresh();
     }
+
 
     render() {
 
-        const { isAuthorized, videos, playlists, moveToPlaylistId, filter } = this.state;
+        const { isAuthorized, playlistName, videos, playlists, moveToPlaylistId, filter } = this.state;
 
-        console.log("Videos.render");
+        // console.log("Videos.render");
 
         if (!isAuthorized) {
             return <div></div>
@@ -227,8 +380,9 @@ class Videos extends Component {
             if (videos) {
                 return (
                     <div className="videos">
-                        <h2>list of videos</h2>
+                        <h2>Videos in {playlistName} :</h2>
                         <h3>{videos.length} videos</h3>
+                        <button onClick={this.refresh}>refresh</button>
                         <div className="playlist-selector">
                             target playlist:
                             {
