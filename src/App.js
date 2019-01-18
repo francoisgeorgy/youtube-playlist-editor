@@ -222,7 +222,9 @@ class App extends Component {
                                     />
                                 )}
                             />
-                            <Route path="/playlists" render={props => (
+                            <Route
+                                path="/playlists"
+                                render={props => (
                                     <Playlists
                                         {...props}
                                         isAuthorized={isAuthorized}
