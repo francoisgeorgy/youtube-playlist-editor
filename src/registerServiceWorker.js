@@ -10,12 +10,12 @@
 
 const isLocalhost = Boolean(
     window.location.hostname === 'localhost' ||
-    // [::1] is the IPv6 localhost address.
-    window.location.hostname === '[::1]' ||
-    // 127.0.0.1/8 is considered localhost for IPv4.
-    window.location.hostname.match(
-        /^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/
-    )
+        // [::1] is the IPv6 localhost address.
+        window.location.hostname === '[::1]' ||
+        // 127.0.0.1/8 is considered localhost for IPv4.
+        window.location.hostname.match(
+            /^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/
+        )
 );
 
 export default function register() {
@@ -41,7 +41,7 @@ export default function register() {
                 navigator.serviceWorker.ready.then(() => {
                     console.log(
                         'This web app is being served cache-first by a service ' +
-                        'worker. To learn more, visit https://goo.gl/SC7cgQ'
+                            'worker. To learn more, visit https://goo.gl/SC7cgQ'
                     );
                 });
             } else {
@@ -65,7 +65,9 @@ function registerValidSW(swUrl) {
                             // the fresh content will have been added to the cache.
                             // It's the perfect time to display a "New content is
                             // available; please refresh." message in your web app.
-                            console.log('New content is available; please refresh.');
+                            console.log(
+                                'New content is available; please refresh.'
+                            );
                         } else {
                             // At this point, everything has been precached.
                             // It's the perfect time to display a
@@ -88,7 +90,8 @@ function checkValidServiceWorker(swUrl) {
             // Ensure service worker exists, and that we really are getting a JS file.
             if (
                 response.status === 404 ||
-                response.headers.get('content-type').indexOf('javascript') === -1
+                response.headers.get('content-type').indexOf('javascript') ===
+                    -1
             ) {
                 // No service worker found. Probably a different app. Reload the page.
                 navigator.serviceWorker.ready.then(registration => {
