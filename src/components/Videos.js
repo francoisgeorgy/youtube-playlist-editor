@@ -486,9 +486,10 @@ class Videos extends Component {
                                 </select>
                             }
                         </div>
+                        {moveToPlaylistId &&
                         <div>
                             <button onClick={this.moveVisible}>move visible to target playlist</button>
-                        </div>
+                        </div>}
                         <div className="filter">
                             filter: <input type="text" defaultValue={filter} onKeyUp={this.updateFilter} />
                         </div>
