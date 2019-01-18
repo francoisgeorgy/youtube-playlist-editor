@@ -1,18 +1,21 @@
-import React, {Component} from "react";
+import React, { Component } from 'react';
 import {
     buildApiRequest,
     buildPlaylistsRequest,
     buildPlaylistItemsRequest,
     executeRequest,
-    executeRequestsInBatch, buildPlaylistNameRequest, insertInPlaylist, moveIntoPlaylist, moveMultipleIntoPlaylist
-} from "../utils/gapi";
-import "./Videos.css";
+    executeRequestsInBatch,
+    buildPlaylistNameRequest,
+    insertInPlaylist,
+    moveIntoPlaylist,
+    moveMultipleIntoPlaylist,
+} from '../utils/gapi';
+import './Videos.css';
 
 /**
  * Display the list of videos for a playlist.
  */
 class Videos extends Component {
-
     constructor(props) {
         super(props);
         // console.log("Videos.constructor", props);
@@ -24,7 +27,7 @@ class Videos extends Component {
             playlists: null,
             moveToPlaylistId: null,
             filter: '',
-            videosLoading: false
+            videosLoading: false,
         };
     }
 
@@ -32,22 +35,25 @@ class Videos extends Component {
         // console.log("Videos.getDerivedStateFromProps", props);
         if (props.isAuthorized !== state.isAuthorized) {
             return {
-                isAuthorized: props.isAuthorized
+                isAuthorized: props.isAuthorized,
             };
         }
         // No state update necessary
         return null;
     }
 
-
     componentDidMount() {
-        console.log("Videos.componentDidMount");
+        console.log('Videos.componentDidMount');
         this.refresh();
     }
 
     componentDidUpdate(prevProps, prevState) {
-
-        console.log(`Videos.componentDidUpdate, playlistId=${this.state.playlistId}, prev=${prevState.playlistId}`, this.state);
+        console.log(
+            `Videos.componentDidUpdate, playlistId=${
+                this.state.playlistId
+            }, prev=${prevState.playlistId}`,
+            this.state
+        );
 
         if (!this.state.isAuthorized) return;
 
@@ -56,114 +62,136 @@ class Videos extends Component {
 
         if (this.state.playlistName === null) {
             // !!! only retrieve data if state.playlistName is empty; otherwise this will generate an endless loop.
-            console.log("Videos.componentDidUpdate: call retrievePlaylistName");
+            console.log('Videos.componentDidUpdate: call retrievePlaylistName');
             this.retrievePlaylistName();
         }
 
-        if (!this.state.videosLoading && this.state.playlistId && (this.state.videos === null)) {
+        if (
+            !this.state.videosLoading &&
+            this.state.playlistId &&
+            this.state.videos === null
+        ) {
             // !!! only retrieve data if state.videos is empty; otherwise this will generate an endless loop.
-            console.log("Videos.componentDidUpdate: call retrieveVideos");
+            console.log('Videos.componentDidUpdate: call retrieveVideos');
             this.retrieveVideos();
         }
 
         if (this.state.playlists === null) {
             // !!! only retrieve data if state.playlists is empty; otherwise this will generate an endless loop.
-            console.log("Videos.componentDidUpdate: call retrievePlaylists");
+            console.log('Videos.componentDidUpdate: call retrievePlaylists');
             this.retrievePlaylists();
         }
     }
 
-    storePlaylists = (data) => {
+    storePlaylists = data => {
         // console.log("Videos.storePlayLists", data.items);
         if (!data) return;
         let list = data.items;
-        list.sort(
-            function(a, b) {
-                return (a.snippet.title.toLowerCase() > b.snippet.title.toLowerCase()) ? 1 : ((b.snippet.title.toLowerCase() > a.snippet.title.toLowerCase()) ? -1 : 0);
-            }
-        );
-        this.setState({playlists: list});
+        list.sort(function(a, b) {
+            return a.snippet.title.toLowerCase() > b.snippet.title.toLowerCase()
+                ? 1
+                : b.snippet.title.toLowerCase() > a.snippet.title.toLowerCase()
+                ? -1
+                : 0;
+        });
+        this.setState({ playlists: list });
     };
 
     storeVideos = (data, currentToken) => {
-
-        console.log("Videos.storeVideos", currentToken);
+        console.log('Videos.storeVideos', currentToken);
 
         if (!data) return;
 
         // console.log("Videos.storeVideos", data);
 
         let list = data.items;
-        list.sort(
-            function(a, b) {
-                return (a.snippet.title.toLowerCase() > b.snippet.title.toLowerCase()) ? 1 : ((b.snippet.title.toLowerCase() > a.snippet.title.toLowerCase()) ? -1 : 0);
-            }
-        );
+        list.sort(function(a, b) {
+            return a.snippet.title.toLowerCase() > b.snippet.title.toLowerCase()
+                ? 1
+                : b.snippet.title.toLowerCase() > a.snippet.title.toLowerCase()
+                ? -1
+                : 0;
+        });
 
         if (currentToken === undefined || !currentToken) {
-            console.log("Videos.storeVideos: set new videos list");
-            this.setState({videos: list});
+            console.log('Videos.storeVideos: set new videos list');
+            this.setState({ videos: list });
         } else {
-            console.log("Videos.storeVideos: append videos to current list");
+            console.log('Videos.storeVideos: append videos to current list');
             this.setState(prevState => ({
-                videos: [...prevState.videos, ...list]
+                videos: [...prevState.videos, ...list],
                 // videos: prevState.videos.concat(list)
-            }))
+            }));
         }
 
         if (data.nextPageToken) {
-            console.log('Videos.storeVideos: get next page with token ' + data.nextPageToken);
+            console.log(
+                'Videos.storeVideos: get next page with token ' +
+                    data.nextPageToken
+            );
             this.retrieveVideos(data.nextPageToken);
         }
-
     };
 
-    updatePlaylistName = (playlistName) => {
+    updatePlaylistName = playlistName => {
         // console.log(playlistName);
-        this.setState({playlistName})
+        this.setState({ playlistName });
     };
 
     retrievePlaylistName = () => {
-
         if (!this.state.playlistId) {
-            console.warn("state.playlistId is empty");
+            console.warn('state.playlistId is empty');
             return;
         }
 
         let req = buildPlaylistNameRequest(this.state.playlistId);
 
         if (!req) {
-            console.warn("req is null");
+            console.warn('req is null');
             return;
         }
-
 
         req.then(
             function(response) {
                 // console.log("buildPlaylistNameRequest", response);
                 try {
-                    this.updatePlaylistName(response.result.items[0].snippet.title)
+                    this.updatePlaylistName(
+                        response.result.items[0].snippet.title
+                    );
                 } catch (e) {
                     if (e instanceof TypeError) {
-                        console.log("buildPlaylistNameRequest incomplete response", e);
+                        console.log(
+                            'buildPlaylistNameRequest incomplete response',
+                            e
+                        );
                     } else {
-                        console.error("buildPlaylistNameRequest unexpected error", e);
+                        console.error(
+                            'buildPlaylistNameRequest unexpected error',
+                            e
+                        );
                     }
                 }
             },
-            function() {    // onRejected handler
-                console.warn("buildPlaylistNameRequest rejected");
+            function() {
+                // onRejected handler
+                console.warn('buildPlaylistNameRequest rejected');
             },
             this
         );
-
     };
 
-    retrieveVideos = (nextPageToken) => {
-        console.log(`Videos.retrieveVideos, playlistId=${this.state.playlistId}, pageToken=${nextPageToken}`);
+    retrieveVideos = nextPageToken => {
+        console.log(
+            `Videos.retrieveVideos, playlistId=${
+                this.state.playlistId
+            }, pageToken=${nextPageToken}`
+        );
         console.log(`Videos.retrieveVideos set videosLoading=true`);
-        this.setState({videosLoading: true});
-        executeRequest(buildPlaylistItemsRequest(this.state.playlistId, nextPageToken), (data) => this.storeVideos(data, nextPageToken));
+        this.setState({ videosLoading: true });
+        executeRequest(
+            buildPlaylistItemsRequest(this.state.playlistId, nextPageToken),
+            data => this.storeVideos(data, nextPageToken)
+        );
     };
 
     retrievePlaylists = () => {
@@ -171,34 +199,36 @@ class Videos extends Component {
         executeRequest(buildPlaylistsRequest(), this.storePlaylists);
     };
 
-
-    removeFromPlaylistState = (videoItemId) => {
+    removeFromPlaylistState = videoItemId => {
         // console.log("Videos.removeFromPlaylistState", videoItemId);
         let videos = this.state.videos;
-        let i = videos.findIndex(function f(e) { return e.id === videoItemId; });
+        let i = videos.findIndex(function f(e) {
+            return e.id === videoItemId;
+        });
         // console.log("Videos.removeSuccess: video to delete: ", i, videos[i]);
         videos.splice(i, 1);
-        this.setState({ videos })
+        this.setState({ videos });
     };
 
-    removeError = (error) => {
-        console.log("Videos.removeError", error.code, error.message);
+    removeError = error => {
+        console.log('Videos.removeError', error.code, error.message);
     };
 
     /**
      * Remove a video from the current playlist
      * @param videoItemId ID of the video-item in the current playlist
      */
-    remove = (videoItemId) => {
-        console.log("Videos.remove", videoItemId);
+    remove = videoItemId => {
+        console.log('Videos.remove', videoItemId);
         if (!videoItemId) return;
-        let request = buildApiRequest(
-            'DELETE',
-            '/youtube/v3/playlistItems',
-            {
-                'id': videoItemId
-            });
-        executeRequest(request, () => this.removeFromPlaylistState(videoItemId), this.removeError);
+        let request = buildApiRequest('DELETE', '/youtube/v3/playlistItems', {
+            id: videoItemId,
+        });
+        executeRequest(
+            request,
+            () => this.removeFromPlaylistState(videoItemId),
+            this.removeError
+        );
     };
 
     // insertSuccess = (videoItemId) => {
@@ -206,12 +236,12 @@ class Videos extends Component {
     //     this.remove(videoItemId);
     // };
 
-    createError = (error) => {
-        console.log("Videos.insertError", error);
+    createError = error => {
+        console.log('Videos.insertError', error);
     };
 
-    insertError = (error) => {
-        console.log("Videos.insertError", error);
+    insertError = error => {
+        console.log('Videos.insertError', error);
     };
 
     /**
@@ -220,8 +250,7 @@ class Videos extends Component {
      * @param videoId ID of the video
      */
     move = (videoItemId, videoId, moveToPlaylistId) => {
-
-        console.log("Videos.move", videoItemId, videoId, moveToPlaylistId);
+        console.log('Videos.move', videoItemId, videoId, moveToPlaylistId);
 
         if (!moveToPlaylistId) return;
 
@@ -229,25 +258,27 @@ class Videos extends Component {
             'POST',
             '/youtube/v3/playlistItems',
             {
-                'part': 'snippet'   //,
+                part: 'snippet', //,
                 // 'onBehalfOfContentOwner': ''
-            }, {
+            },
+            {
                 'snippet.playlistId': moveToPlaylistId,
                 'snippet.resourceId.kind': 'youtube#video',
-                'snippet.resourceId.videoId': videoId   //,
+                'snippet.resourceId.videoId': videoId, //,
                 // 'snippet.position': ''
-            });
+            }
+        );
 
         let deleteRequest = buildApiRequest(
             'DELETE',
             '/youtube/v3/playlistItems',
             {
-                'id': videoItemId
-            });
+                id: videoItemId,
+            }
+        );
 
         //executeRequest(request, () => { this.insertSuccess(videoItemId) }, this.insertError);
         // executeRequest(request, () => { this.remove(videoItemId) }, this.insertError);
-
 
         // https://developers.google.com/api-client-library/javascript/reference/referencedocs#gapiclientbatch
         // https://developers.google.com/api-client-library/javascript/features/promises
@@ -262,7 +293,7 @@ class Videos extends Component {
         //     status	    number | undefined	HTTP status.
         //     statusText	string | undefined	HTTP status text.
 
-/*
+        /*
         insertRequest
             .then(function(response) {    // onFulfilled handler:
                 console.log("insertRequest promise onFulfilled handler", response);
@@ -294,19 +325,20 @@ class Videos extends Component {
 */
         let r = null;
 
-        console.log("calling insertRequest");
+        console.log('calling insertRequest');
         insertRequest
-            .then(function(){
-                console.log("calling deleteRequest");
-                return deleteRequest
-                    .then(function(){
-                        console.log("deleteRequest.then");
-                        r = 'OK';
-                    });
+            .then(function() {
+                console.log('calling deleteRequest');
+                return deleteRequest.then(function() {
+                    console.log('deleteRequest.then');
+                    r = 'OK';
+                });
             })
             .catch(function(reason) {
-                console.log("move failed", JSON.stringify(reason));
-                r = reason.result ? reason.result.error.message : "unknow reason";
+                console.log('move failed', JSON.stringify(reason));
+                r = reason.result
+                    ? reason.result.error.message
+                    : 'unknow reason';
             });
 
         return r;
@@ -323,13 +355,10 @@ class Videos extends Component {
         //          "headers":{"date":"Thu, 17 Jan 2019 13:26:34 GMT","content-encoding":"gzip","server":"GSE","content-type":"application/json; charset=UTF-8","vary":"Origin, X-Origin","cache-control":"private, max-age=0","content-length":"150","expires":"Thu, 17 Jan 2019 13:26:34 GMT"},
         //          "status":400,
         //          "statusText":null}
-
-
     };
 
-
     movep = (videoItemId, videoId, moveToPlaylistId) => {
-        console.log("movep", videoItemId, videoId, moveToPlaylistId);
+        console.log('movep', videoItemId, videoId, moveToPlaylistId);
         // insertInPlaylist(videoId, moveToPlaylistId)
         //     .then(function(response) {
         //         console.log("movep.insertInPlaylist resovled", response);
@@ -343,30 +372,31 @@ class Videos extends Component {
 
         moveIntoPlaylist(videoItemId, videoId, moveToPlaylistId)
             .then(function(response) {
-                console.log("movep.moveIntoPlaylist resolved", response);
+                console.log('movep.moveIntoPlaylist resolved', response);
             })
             .catch(function(reason) {
-                console.log("movep.moveIntoPlaylist rejected", reason, reason.result.error.message);
+                console.log(
+                    'movep.moveIntoPlaylist rejected',
+                    reason,
+                    reason.result.error.message
+                );
             });
-
     };
 
-    moveSuccess = ({operation, data, videoId, videoItemId}) => {
-
-        console.log("moveSuccess", operation, videoId, videoItemId, data);
+    moveSuccess = ({ operation, data, videoId, videoItemId }) => {
+        console.log('moveSuccess', operation, videoId, videoItemId, data);
 
         switch (operation) {
-            case "insert" :
+            case 'insert':
                 // console.log("insert video ", videoId, data.result.snippet.resourceId.videoId);
                 break;
-            case "delete" :
+            case 'delete':
                 // console.log("delete video ", videoItemId);
                 this.removeFromPlaylistState(videoItemId);
                 break;
-            default: console.error(`moveSuccess: unknown operation ${operation}`);
+            default:
+                console.error(`moveSuccess: unknown operation ${operation}`);
         }
-
-
 
         // result:
         //     etag: ""XpPGQXPnxQJhLgs6enD_n8JR4Qk/-SMkaVE1qGHUDguCww7-fwlg5AY""
@@ -387,77 +417,95 @@ class Videos extends Component {
         // statusText: null
     };
 
-    moveFailure = (r) => {
-        console.log("moveFailure", r);
+    moveFailure = r => {
+        console.log('moveFailure', r);
     };
 
     moveVisible = () => {
-        console.log("Videos.moveVisible");
+        console.log('Videos.moveVisible');
 
         let videoItemIds = [];
         let videoIds = [];
 
         this.state.videos
-            .filter(video => video.snippet.title.toLowerCase().indexOf(this.state.filter.toLowerCase()) > -1)
+            .filter(
+                video =>
+                    video.snippet.title
+                        .toLowerCase()
+                        .indexOf(this.state.filter.toLowerCase()) > -1
+            )
             .map(video => {
                 videoItemIds.push(video.id);
-                if (!videoIds.includes(video.contentDetails.videoId)) videoIds.push(video.contentDetails.videoId);  // avoid pushing duplicates
+                if (!videoIds.includes(video.contentDetails.videoId))
+                    videoIds.push(video.contentDetails.videoId); // avoid pushing duplicates
             });
 
-        console.log("moveVisible", videoIds, videoItemIds);
+        console.log('moveVisible', videoIds, videoItemIds);
 
-        console.log("moveMultipleIntoPlaylist before");
+        console.log('moveMultipleIntoPlaylist before');
         // moveMultipleIntoPlaylist(videoItemIds, videoIds, this.state.moveToPlaylistId).then(this.moveSuccess, this.moveFailure);
-        moveMultipleIntoPlaylist(videoItemIds, videoIds, this.state.moveToPlaylistId, this.moveSuccess, this.moveFailure);
-        console.log("moveMultipleIntoPlaylist after");
-
+        moveMultipleIntoPlaylist(
+            videoItemIds,
+            videoIds,
+            this.state.moveToPlaylistId,
+            this.moveSuccess,
+            this.moveFailure
+        );
+        console.log('moveMultipleIntoPlaylist after');
     };
 
-    setMoveToList = (event) => {
+    setMoveToList = event => {
         // console.log("Videos.setMoveToList", event.target.value);
         this.setState({ moveToPlaylistId: event.target.value });
     };
 
-    updateFilter = (event) => {
+    updateFilter = event => {
         // console.log("Videos.updateFilter", event.target.value);
         let f = event.target.value;
         this.setState({ filter: f });
     };
 
     refresh = (clearFilter = false) => {
-
-        console.log("refresh");
+        console.log('refresh');
 
         if (!this.state.isAuthorized) return;
 
-        this.setState(
-        {
-                playlistName: null,
-                videos: null,
-                playlists: null,
-                videosLoading: false,
-                filter: clearFilter ? '' : this.state.filter
-            }
-        );
+        this.setState({
+            playlistName: null,
+            videos: null,
+            playlists: null,
+            videosLoading: false,
+            filter: clearFilter ? '' : this.state.filter,
+        });
 
         this.retrievePlaylistName();
         this.retrieveVideos();
         this.retrievePlaylists();
     };
 
-
     render() {
-
-        const { isAuthorized, playlistId, playlistName, videos, playlists, moveToPlaylistId, filter } = this.state;
+        const {
+            isAuthorized,
+            playlistId,
+            playlistName,
+            videos,
+            playlists,
+            moveToPlaylistId,
+            filter,
+        } = this.state;
 
         // console.log("Videos.render", videos);
 
         if (!isAuthorized) {
-            return <div></div>
+            return <div />;
         } else {
             if (videos) {
-
-                let visibleVideos = videos.filter((video) => video.snippet.title.toLowerCase().indexOf(filter.toLowerCase()) > -1);
+                let visibleVideos = videos.filter(
+                    video =>
+                        video.snippet.title
+                            .toLowerCase()
+                            .indexOf(filter.toLowerCase()) > -1
+                );
                 visibleVideos.sort((a, b) => {
                     if (a.snippet.title < b.snippet.title) {
                         return -1;
@@ -476,41 +524,73 @@ class Videos extends Component {
                         <button onClick={this.refresh}>refresh</button>
                         <div className="playlist-selector">
                             target playlist:
-                            {
-                                playlists &&
+                            {playlists && (
                                 <select onChange={this.setMoveToList}>
-                                    <option value="">select list to move to</option>
-                                {playlists.map((p, i) => {
-                                    return p.id=== playlistId ? null : <option key={i} value={p.id}>{p.snippet.title}</option>
-                                })}
+                                    <option value="">
+                                        select list to move to
+                                    </option>
+                                    {playlists.map((p, i) => {
+                                        return p.id === playlistId ? null : (
+                                            <option key={i} value={p.id}>
+                                                {p.snippet.title}
+                                            </option>
+                                        );
+                                    })}
                                 </select>
-                            }
+                            )}
                         </div>
-                        {moveToPlaylistId &&
-                        <div>
-                            <button onClick={this.moveVisible}>move visible to target playlist</button>
-                        </div>}
+                        {moveToPlaylistId && (
+                            <div>
+                                <button onClick={this.moveVisible}>
+                                    move visible to target playlist
+                                </button>
+                            </div>
+                        )}
                         <div className="filter">
-                            filter: <input type="text" defaultValue={filter} onKeyUp={this.updateFilter} />
+                            filter:{' '}
+                            <input
+                                type="text"
+                                defaultValue={filter}
+                                onKeyUp={this.updateFilter}
+                            />
                         </div>
                         <div>
-                            {
-                                // videos.filter((video) => video.snippet.title.toLowerCase().indexOf(filter.toLowerCase()) > -1).map((video, index) => {
-                                visibleVideos.map((video, index) => {
-                                    return (
-                                        <div key={index}>
-                                            {video.snippet.title} - {video.contentDetails.videoId} - {video.id}
-                                            <button onClick={() => this.remove(video.id)}>remove</button>
-                                            {moveToPlaylistId && <button onClick={() => this.movep(video.id, video.contentDetails.videoId, moveToPlaylistId)}>move</button>}
-                                        </div>
-                                    )
-                                })
-                            }
+                            {// videos.filter((video) => video.snippet.title.toLowerCase().indexOf(filter.toLowerCase()) > -1).map((video, index) => {
+                            visibleVideos.map((video, index) => {
+                                return (
+                                    <div key={index}>
+                                        {video.snippet.title} -{' '}
+                                        {video.contentDetails.videoId} -{' '}
+                                        {video.id}
+                                        <button
+                                            onClick={() =>
+                                                this.remove(video.id)
+                                            }
+                                        >
+                                            remove
+                                        </button>
+                                        {moveToPlaylistId && (
+                                            <button
+                                                onClick={() =>
+                                                    this.movep(
+                                                        video.id,
+                                                        video.contentDetails
+                                                            .videoId,
+                                                        moveToPlaylistId
+                                                    )
+                                                }
+                                            >
+                                                move
+                                            </button>
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
-                )
+                );
             } else {
-                return <div>Retrieving the list of videos...</div>
+                return <div>Retrieving the list of videos...</div>;
             }
         }
     }

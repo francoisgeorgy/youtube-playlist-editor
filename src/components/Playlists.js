@@ -1,29 +1,32 @@
-import React, {Component} from "react";
-import {buildApiRequest, buildPlaylistsRequest, executeRequest} from "../utils/gapi";
-import { Link } from "react-router-dom";
-import "./Playlists.css";
+import React, { Component } from 'react';
+import {
+    buildApiRequest,
+    buildPlaylistsRequest,
+    executeRequest,
+} from '../utils/gapi';
+import { Link } from 'react-router-dom';
+import './Playlists.css';
 
 /**
  * Display the list of playlists of the authorized user.
  */
 class Playlists extends Component {
-
     constructor(props) {
         super(props);
-        console.log("Playlists.constructor", props);
+        console.log('Playlists.constructor', props);
         this.state = {
             isAuthorized: false,
             playlists: null,
             newPlaylist: '',
-            filter: ''
+            filter: '',
         };
     }
 
     static getDerivedStateFromProps(props, state) {
-        console.log("Playlists.getDerivedStateFromProps", props);
+        console.log('Playlists.getDerivedStateFromProps', props);
         if (props.isAuthorized !== state.isAuthorized) {
             return {
-                isAuthorized: props.isAuthorized
+                isAuthorized: props.isAuthorized,
             };
         }
 
@@ -32,7 +35,7 @@ class Playlists extends Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        console.log("Playlists.componentDidUpdate");
+        console.log('Playlists.componentDidUpdate');
         // At this point, we're in the "commit" phase, so it's safe to load the new data.
         if (this.state.isAuthorized && this.state.playlists === null) {
             // !!! only retrieve data if state.playlists is empty; otherwise this will generate an endless loop.
@@ -40,8 +43,8 @@ class Playlists extends Component {
         }
     }
 
-    newPlaylistName = (event) => {
-        console.log("Playlists.newPlaylistName");
+    newPlaylistName = event => {
+        console.log('Playlists.newPlaylistName');
         this.setState({ newPlaylist: event.target.value });
     };
 
@@ -51,38 +54,49 @@ class Playlists extends Component {
             'POST',
             '/youtube/v3/playlists',
             {
-                'part': 'snippet,status',
-                'onBehalfOfContentOwner': ''
-            }, {
+                part: 'snippet,status',
+                onBehalfOfContentOwner: '',
+            },
+            {
                 'snippet.title': this.state.newPlaylist,
                 'snippet.description': '',
                 'snippet.tags[]': '',
                 'snippet.defaultLanguage': '',
-                'status.privacyStatus': 'private'   // unlisted, private, public    https://developers.google.com/youtube/v3/docs/playlists#resource
-            });
-        //executeRequest(request, () => { this.insertSuccess(videoItemId) }, this.insertError);
-        executeRequest(request, (resp) => { console.log("created playlist", resp); this.retrieve() }, this.createError);
-    };
-
-    store = (data) => {
-        console.log("Playlists.store");
-        if (!data) return;
-        let list = data.items;
-        list.sort(
-            function(a, b) {
-                return (a.snippet.title.toLowerCase() > b.snippet.title.toLowerCase()) ? 1 : ((b.snippet.title.toLowerCase() > a.snippet.title.toLowerCase()) ? -1 : 0);
+                'status.privacyStatus': 'private', // unlisted, private, public    https://developers.google.com/youtube/v3/docs/playlists#resource
             }
         );
-        this.setState({playlists: list});
+        //executeRequest(request, () => { this.insertSuccess(videoItemId) }, this.insertError);
+        executeRequest(
+            request,
+            resp => {
+                console.log('created playlist', resp);
+                this.retrieve();
+            },
+            this.createError
+        );
     };
 
-    retrieve = (nextPageToken) => {
-        console.log("Playlists.retrieve", nextPageToken);
+    store = data => {
+        console.log('Playlists.store');
+        if (!data) return;
+        let list = data.items;
+        list.sort(function(a, b) {
+            return a.snippet.title.toLowerCase() > b.snippet.title.toLowerCase()
+                ? 1
+                : b.snippet.title.toLowerCase() > a.snippet.title.toLowerCase()
+                ? -1
+                : 0;
+        });
+        this.setState({ playlists: list });
+    };
+
+    retrieve = nextPageToken => {
+        console.log('Playlists.retrieve', nextPageToken);
         executeRequest(buildPlaylistsRequest(nextPageToken), this.store);
     };
 
-    updateFilter = (event) => {
-        console.log("Playlists.updateFilter");
+    updateFilter = event => {
+        console.log('Playlists.updateFilter');
         if (event.keyCode === 27) {
             this.setState({ filter: '' });
         } else {
@@ -95,7 +109,7 @@ class Playlists extends Component {
     };
 
     componentDidMount() {
-        console.log("Playlists.componentDidMount");
+        console.log('Playlists.componentDidMount');
         this.retrieve();
     }
 
@@ -139,13 +153,12 @@ class Playlists extends Component {
     */
 
     render() {
-
         const { isAuthorized, playlists, newPlaylist, filter } = this.state;
 
-        console.log("Playlists render");
+        console.log('Playlists render');
 
         if (!isAuthorized) {
-            return <div></div>
+            return <div />;
         } else {
             if (playlists) {
                 return (
@@ -153,31 +166,52 @@ class Playlists extends Component {
                         <h2>list of playlists</h2>
                         <button onClick={this.refresh}>refresh</button>
                         <div>
-                            new playlist: <input type="text" value={newPlaylist} onChange={this.newPlaylistName} /> <button onClick={this.createPlaylist}>create</button>
+                            new playlist:{' '}
+                            <input
+                                type="text"
+                                value={newPlaylist}
+                                onChange={this.newPlaylistName}
+                            />{' '}
+                            <button onClick={this.createPlaylist}>
+                                create
+                            </button>
                         </div>
                         <div className="filter">
-                            filter: <input type="text" onKeyUp={this.updateFilter} />
+                            filter:{' '}
+                            <input type="text" onKeyUp={this.updateFilter} />
                         </div>
                         <div>
-                            {
-                                playlists.filter((p) => p.snippet.title.toLowerCase().indexOf(filter.toLowerCase()) > -1).map((playlist, index) => {
+                            {playlists
+                                .filter(
+                                    p =>
+                                        p.snippet.title
+                                            .toLowerCase()
+                                            .indexOf(filter.toLowerCase()) > -1
+                                )
+                                .map((playlist, index) => {
                                     // console.log(JSON.stringify(playlist));
-                                    return <div key={index} >
-                                            <Link to={`/videos/${playlist.id}`}>{playlist.snippet.title} ({playlist.contentDetails.itemCount} videos)</Link>
-                                    </div>
+                                    return (
+                                        <div key={index}>
+                                            <Link to={`/videos/${playlist.id}`}>
+                                                {playlist.snippet.title} (
+                                                {
+                                                    playlist.contentDetails
+                                                        .itemCount
+                                                }{' '}
+                                                videos)
+                                            </Link>
+                                        </div>
+                                    );
                                     // return <div key={index}><a href={`#${playlist.id}`}>{playlist.snippet.title}</a> ({playlist.contentDetails.itemCount} videos)</div>
-                                })
-                            }
+                                })}
                         </div>
                     </div>
-                )
+                );
             } else {
-                return <div>Retrieving the playlists...</div>
+                return <div>Retrieving the playlists...</div>;
             }
         }
-
     }
-
 }
 
 export default Playlists;

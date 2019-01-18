@@ -1,28 +1,27 @@
-import React, {Component} from "react";
-import {buildChannelsRequest, executeRequest} from "../utils/gapi";
-import { Link } from "react-router-dom";
-import "./Channels.css";
+import React, { Component } from 'react';
+import { buildChannelsRequest, executeRequest } from '../utils/gapi';
+import { Link } from 'react-router-dom';
+import './Channels.css';
 
 /**
  * Display the list of channels of the authorized user.
  */
 class Channels extends Component {
-
     constructor(props) {
         super(props);
-        console.log("Channels.constructor", props);
+        console.log('Channels.constructor', props);
         this.state = {
             isAuthorized: false,
             channels: null,
-            filter: ''
+            filter: '',
         };
     }
 
     static getDerivedStateFromProps(props, state) {
-        console.log("Channels.getDerivedStateFromProps", props);
+        console.log('Channels.getDerivedStateFromProps', props);
         if (props.isAuthorized !== state.isAuthorized) {
             return {
-                isAuthorized: props.isAuthorized
+                isAuthorized: props.isAuthorized,
             };
         }
 
@@ -31,7 +30,7 @@ class Channels extends Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        console.log("Channels.componentDidUpdate");
+        console.log('Channels.componentDidUpdate');
         // At this point, we're in the "commit" phase, so it's safe to load the new data.
         if (this.state.isAuthorized && this.state.channels === null) {
             // !!! only retrieve data if state.channels is empty; otherwise this will generate an endless loop.
@@ -39,21 +38,21 @@ class Channels extends Component {
         }
     }
 
-    store = (data) => {
-        console.log("Channels.store");
+    store = data => {
+        console.log('Channels.store');
         if (!data) return;
         this.setState({
-            channels: data.items[0].contentDetails.relatedPlaylists
+            channels: data.items[0].contentDetails.relatedPlaylists,
         });
     };
 
-    retrieve = (nextPageToken) => {
-        console.log("Channels.retrieve", nextPageToken);
+    retrieve = nextPageToken => {
+        console.log('Channels.retrieve', nextPageToken);
         executeRequest(buildChannelsRequest(), this.store);
     };
 
-    updateFilter = (event) => {
-        console.log("Channels.updateFilter");
+    updateFilter = event => {
+        console.log('Channels.updateFilter');
         if (event.keyCode === 27) {
             this.setState({ filter: '' });
         } else {
@@ -62,44 +61,43 @@ class Channels extends Component {
     };
 
     componentDidMount() {
-        console.log("Channels.componentDidMount");
+        console.log('Channels.componentDidMount');
         this.retrieve();
     }
 
     render() {
-
         const { isAuthorized, channels, filter } = this.state;
 
-        console.log("Channels render", channels);
+        console.log('Channels render', channels);
 
         if (!isAuthorized) {
-            return <div></div>
+            return <div />;
         } else {
             if (channels) {
                 return (
                     <div>
                         <h2>list of channels</h2>
                         {/*<div className="filter">*/}
-                            {/*filter: <input type="text" onKeyUp={this.updateFilter} />*/}
+                        {/*filter: <input type="text" onKeyUp={this.updateFilter} />*/}
                         {/*</div>*/}
                         <div>
-                            {
-                                Object.keys(channels).map((name, index) => {
-                                    return <div key={index} >
-                                        <Link to={`/videos/${channels[name]}`}>{name}</Link>
+                            {Object.keys(channels).map((name, index) => {
+                                return (
+                                    <div key={index}>
+                                        <Link to={`/videos/${channels[name]}`}>
+                                            {name}
+                                        </Link>
                                     </div>
-                                })
-                            }
+                                );
+                            })}
                         </div>
                     </div>
-                )
+                );
             } else {
-                return <div>Retrieving the channels...</div>
+                return <div>Retrieving the channels...</div>;
             }
         }
-
     }
-
 }
 
 export default Channels;
