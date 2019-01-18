@@ -58,7 +58,7 @@
         if (properties) {
             let resource = createResource(properties);
 
-            // console.log("buildApiRequest resource", resource);
+            console.log("buildApiRequest resource", resource);
 
             request = window.gapi.client.request({
                 'body': resource,
@@ -325,7 +325,7 @@
             {
                 'id': videoItemId
             });
-
+/*
         return new Promise(function(resolve, reject) {
             console.log("moveIntoPlaylist: calling insertRequest");
             insertRequest
@@ -342,6 +342,17 @@
                     reject(reason.result ? reason.result.error.message : "unknow reason");
                 });
         });
+*/
+
+        return insertRequest.then(insertResponse => {
+            console.log("moveIntoPlaylist: calling deleteRequest insertResponse", insertResponse);
+            return deleteRequest
+                .then(deleteResult => {
+                    console.log("moveIntoPlaylist: deleteRequest.then, deleteResult", deleteResult);
+                    return deleteResult;
+                });
+        });
+
 
         // {
         //  "result":{
@@ -359,4 +370,96 @@
 
     }
 
+    export function moveMultipleIntoPlaylist(videoItemIds, videoIds, moveToPlaylistId) {
+
+        console.log("moveIntoPlaylist", videoItemIds, videoIds, moveToPlaylistId);
+
+        if (!moveToPlaylistId) return;
+
+        let insertRequests = [];
+        for (let i = 0; i < videoIds.length; i++) {
+            insertRequests.push(buildApiRequest(
+                'POST',
+                '/youtube/v3/playlistItems',
+                {
+                    'part': 'snippet,status'
+                }, {
+                    'snippet.playlistId': moveToPlaylistId,
+                    'snippet.resourceId.kind': 'youtube#video',
+                    'snippet.resourceId.videoId': videoIds[i]
+                })
+            );
+        }
+
+        let deleteRequests = [];
+        for (let i = 0; i < videoItemIds.length; i++) {
+            deleteRequests.push(buildApiRequest(
+                'DELETE',
+                '/youtube/v3/playlistItems',
+                {
+                    'id': videoItemIds[i]
+                })
+            );
+        }
+
+/*
+        // does not vowkr completely
+        return Promise.sequence(
+            insertRequests
+        ).then(result => {
+                console.log("moveMultipleIntoPlaylist: promise.then, result", result);
+                return Promise.all(deleteRequests).then(
+                    deleteResult => {
+                        console.log("moveMultipleIntoPlaylist: deleteRequests.then, deleteResult", deleteResult);
+                        return deleteResult;
+                    }
+                );
+            }
+        );
+*/
+
+        // SEQUENCE:
+
+        // Start off with a promise that always resolves
+        let sequence = Promise.resolve();
+
+        for (let i=0; i<insertRequests.length; i++) {
+            sequence = sequence.then(t => {
+                console.log("t", t);
+                return insertRequests[i];
+            }).then(r=> {
+                console.log("r", r);
+                return deleteRequests[i];
+            });
+        }
+
+        return sequence;
+
+
+
+        // return insertRequest.then(insertResponse => {
+        //     console.log("moveIntoPlaylist: calling deleteRequest insertResponse", insertResponse);
+        //     return deleteRequest
+        //         .then(deleteResult => {
+        //             console.log("moveIntoPlaylist: deleteRequest.then, deleteResult", deleteResult);
+        //             return deleteResult;
+        //         });
+        // });
+
+
+        // {
+        //  "result":{
+        //      "error":{
+        //          "errors":[
+        //              {"domain":"youtube.playlistItem","reason":"playlistIdRequired",
+        //              "message":"Playlist id not specified."}],
+        //          "code":400,
+        //          "message":"Playlist id not specified."}},
+        //          "body":"{\n \"error\": {\n  \"errors\": [\n   {\n    \"domain\": \"youtube.playlistItem\",\n    \"reason\": \"playlistIdRequired\",\n    \"message\": \"Playlist id not specified.\"\n   }\n  ],\n  \"code\": 400,\n  \"message\": \"Playlist id not specified.\"\n }\n}\n",
+        //          "headers":{"date":"Thu, 17 Jan 2019 13:26:34 GMT","content-encoding":"gzip","server":"GSE","content-type":"application/json; charset=UTF-8","vary":"Origin, X-Origin","cache-control":"private, max-age=0","content-length":"150","expires":"Thu, 17 Jan 2019 13:26:34 GMT"},
+        //          "status":400,
+        //          "statusText":null}
+
+
+    }
 
