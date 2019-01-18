@@ -172,11 +172,11 @@ class Videos extends Component {
     };
 
 
-    removeSuccess = (videoItemId) => {
-        console.log("Videos.removeSuccess", videoItemId);
+    removeFromPlaylistState = (videoItemId) => {
+        // console.log("Videos.removeFromPlaylistState", videoItemId);
         let videos = this.state.videos;
         let i = videos.findIndex(function f(e) { return e.id === videoItemId; });
-        console.log("Videos.removeSuccess: video to delete: ", i, videos[i]);
+        // console.log("Videos.removeSuccess: video to delete: ", i, videos[i]);
         videos.splice(i, 1);
         this.setState({ videos })
     };
@@ -198,7 +198,7 @@ class Videos extends Component {
             {
                 'id': videoItemId
             });
-        executeRequest(request, () => this.removeSuccess(videoItemId), this.removeError);
+        executeRequest(request, () => this.removeFromPlaylistState(videoItemId), this.removeError);
     };
 
     // insertSuccess = (videoItemId) => {
@@ -351,8 +351,40 @@ class Videos extends Component {
 
     };
 
-    moveSuccess = (r) => {
-        console.log("moveSuccess", r);
+    moveSuccess = ({operation, data, videoId, videoItemId}) => {
+
+        console.log("moveSuccess", operation, videoId, videoItemId, data);
+
+        switch (operation) {
+            case "insert" :
+                // console.log("insert video ", videoId, data.result.snippet.resourceId.videoId);
+                break;
+            case "delete" :
+                // console.log("delete video ", videoItemId);
+                this.removeFromPlaylistState(videoItemId);
+                break;
+            default: console.error(`moveSuccess: unknown operation ${operation}`);
+        }
+
+
+
+        // result:
+        //     etag: ""XpPGQXPnxQJhLgs6enD_n8JR4Qk/-SMkaVE1qGHUDguCww7-fwlg5AY""
+        // id: "UExfeDhNcFV5cHhlYksyX0NwSmItT3ROZVVfNTY4eWZCMi41MzJCQjBCNDIyRkJDN0VD"
+        // kind: "youtube#playlistItem"
+        // snippet:
+        //     channelId: "UCE0q36_agQAeb4G3PXivkew"
+        // channelTitle: "François Georgy"
+        // description: "Now playing in select cities: gracejonesmovie.com↵↵This electrifying journey through the public and private worlds of pop culture mega-icon Grace Jones contrasts musical sequences with intimate personal footage, all the while brimming with Jones’s bold aesthetic. A larger-than-life entertainer, an androgynous glam-pop diva, an unpredictable media presence – Grace Jones is all these things and more. Sophie Fiennes’s documentary goes beyond the traditional music biography, offering a portrait as stylish and unconventional as its subject. Taking us home with her to Jamaica, into the studio with long-time collaborators Sly & Robbie, and backstage at gigs around the world, the film reveals Jones as lover, daughter, mother, and businesswoman. But the stage is the fixed point to which the film returns, with eye-popping performances of "Slave to the Rhythm," “Pull Up to the Bumper,” "Love is the Drug," and more. Jones herself has said watching the film “will be like seeing me almost naked” and, indeed, Fiennes’s treatment is every bit as definition-defying as its subject, untamed by either age or life itself."
+        // playlistId: "PL_x8MpUypxebK2_CpJb-OtNeU_568yfB2"
+        // publishedAt: "2019-01-18T12:35:59.000Z"
+        // resourceId: {kind: "youtube#video", videoId: "ya7yeAXU_Cw"}
+        // thumbnails: {default: {…}, medium: {…}, high: {…}, standard: {…}, maxres: {…}}
+        // title: "Grace Jones: Bloodlight and Bami – Official U.S. Trailer"
+        // __proto__: Object
+        // __proto__: Object
+        // status: 200
+        // statusText: null
     };
 
     moveFailure = (r) => {
@@ -373,43 +405,12 @@ class Videos extends Component {
             });
 
         console.log("moveVisible", videoIds, videoItemIds);
-/*
 
-        moveMultipleIntoPlaylist(videoItemIds, videoIds, this.state.moveToPlaylistId)
-            .then(function(response) {
-                console.log("moveVisible resolved", response);
+        console.log("moveMultipleIntoPlaylist before");
+        // moveMultipleIntoPlaylist(videoItemIds, videoIds, this.state.moveToPlaylistId).then(this.moveSuccess, this.moveFailure);
+        moveMultipleIntoPlaylist(videoItemIds, videoIds, this.state.moveToPlaylistId, this.moveSuccess, this.moveFailure);
+        console.log("moveMultipleIntoPlaylist after");
 
-                //this.refresh(true);
-
-            })
-            .catch(function(reason) {
-                console.log("moveVisible rejected", reason, reason.result.error.message);
-            });
-*/
-
-        moveMultipleIntoPlaylist(videoItemIds, videoIds, this.state.moveToPlaylistId).then(this.moveSuccess, this.moveFailure);
-
-        /*
-        let requests = [];
-        this.state.videos.filter(
-            (video) => video.snippet.title.indexOf(this.state.filter) > -1).map(video => {
-                console.log("moveVisible", video.id, video.contentDetails.videoId, this.state.moveToPlaylistId);
-                requests.push(buildApiRequest(
-                    'POST',
-                    '/youtube/v3/playlistItems',
-                    {
-                        'part': 'snippet',
-                        'onBehalfOfContentOwner': ''
-                    }, {
-                        'snippet.playlistId': this.state.moveToPlaylistId,
-                        'snippet.resourceId.kind': 'youtube#video',
-                        'snippet.resourceId.videoId': video.contentDetails.videoId,
-                        'snippet.position': ''
-                    }));
-            }
-        );
-        executeRequestsInBatch(requests, () => console.log("batch ok"), () => console.log("batch fail"));
-        */
     };
 
     setMoveToList = (event) => {
@@ -444,11 +445,12 @@ class Videos extends Component {
         this.retrievePlaylists();
     };
 
+
     render() {
 
-        const { isAuthorized, playlistName, videos, playlists, moveToPlaylistId, filter } = this.state;
+        const { isAuthorized, playlistId, playlistName, videos, playlists, moveToPlaylistId, filter } = this.state;
 
-        console.log("Videos.render");
+        console.log("Videos.render", videos);
 
         if (!isAuthorized) {
             return <div></div>
@@ -478,11 +480,9 @@ class Videos extends Component {
                                 playlists &&
                                 <select onChange={this.setMoveToList}>
                                     <option value="">select list to move to</option>
-                                {playlists.map((p, i) => (
-                                    <option key={i} value={p.id}>
-                                        {p.snippet.title}
-                                    </option>
-                                ))}
+                                {playlists.map((p, i) => {
+                                    return p.id=== playlistId ? null : <option key={i} value={p.id}>{p.snippet.title}</option>
+                                })}
                                 </select>
                             }
                         </div>

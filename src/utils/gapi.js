@@ -370,9 +370,9 @@
 
     }
 
-    export function moveMultipleIntoPlaylist(videoItemIds, videoIds, moveToPlaylistId) {
+    export function moveMultipleIntoPlaylist(videoItemIds, videoIds, moveToPlaylistId, successCallback, failureCallback) {
 
-        console.log("moveIntoPlaylist", videoItemIds, videoIds, moveToPlaylistId);
+        console.log("moveMultipleIntoPlaylist", videoItemIds, videoIds, moveToPlaylistId);
 
         if (!moveToPlaylistId) return;
 
@@ -382,7 +382,7 @@
                 'POST',
                 '/youtube/v3/playlistItems',
                 {
-                    'part': 'snippet,status'
+                    'part': 'snippet'
                 }, {
                     'snippet.playlistId': moveToPlaylistId,
                     'snippet.resourceId.kind': 'youtube#video',
@@ -425,27 +425,27 @@
 
         for (let i=0; i<insertRequests.length; i++) {
             sequence = sequence.then(t => {
-                console.log("t", t);
+                if (t) {
+                    // console.log("moveMultipleIntoPlaylist: delete success", i, t);     // delete result
+                    successCallback({operation: 'delete', data: t, videoId: `${videoIds[i]}`, videoItemId: `${videoItemIds[i]}`});
+                }
                 return insertRequests[i];
             }).then(r=> {
-                console.log("r", r);
+                if (r) {
+                    // console.log("moveMultipleIntoPlaylist: insert success", i, r);     // insert result
+                    successCallback({operation: 'insert', data: r, videoId: `${videoIds[i]}`, videoItemId: `${videoItemIds[i]}`});
+                }
                 return deleteRequests[i];
             });
         }
 
-        return sequence;
+        sequence.then(
+            r => successCallback({operation: 'delete', data: r, videoId: `${videoIds[videoIds.length - 1]}`, videoItemId: `${videoItemIds[videoItemIds.length - 1]}`}),
+                r => failureCallback(r))
 
+        //moveMultipleIntoPlaylist(videoItemIds, videoIds, this.state.moveToPlaylistId).then(this.moveSuccess, this.moveFailure);
 
-
-        // return insertRequest.then(insertResponse => {
-        //     console.log("moveIntoPlaylist: calling deleteRequest insertResponse", insertResponse);
-        //     return deleteRequest
-        //         .then(deleteResult => {
-        //             console.log("moveIntoPlaylist: deleteRequest.then, deleteResult", deleteResult);
-        //             return deleteResult;
-        //         });
-        // });
-
+        //return sequence;
 
         // {
         //  "result":{
