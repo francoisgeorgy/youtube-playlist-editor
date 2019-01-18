@@ -450,7 +450,7 @@ class Videos extends Component {
 
         const { isAuthorized, playlistId, playlistName, videos, playlists, moveToPlaylistId, filter } = this.state;
 
-        console.log("Videos.render", videos);
+        // console.log("Videos.render", videos);
 
         if (!isAuthorized) {
             return <div></div>

@@ -423,6 +423,7 @@
         // Start off with a promise that always resolves
         let sequence = Promise.resolve();
 
+/*
         for (let i=0; i<insertRequests.length; i++) {
             sequence = sequence.then(t => {
                 if (t) {
@@ -438,10 +439,33 @@
                 return deleteRequests[i];
             });
         }
+*/
 
-        sequence.then(
-            r => successCallback({operation: 'delete', data: r, videoId: `${videoIds[videoIds.length - 1]}`, videoItemId: `${videoItemIds[videoItemIds.length - 1]}`}),
-                r => failureCallback(r))
+
+        for (let i=0; i<insertRequests.length; i++) {
+            sequence = sequence
+                .then(() => insertRequests[i])
+                .then(t => {
+                    // if (t) {
+                        // console.log("moveMultipleIntoPlaylist: delete success", i, t);     // delete result
+                        successCallback({operation: 'delete', data: t, videoId: `${videoIds[i]}`, videoItemId: `${videoItemIds[i]}`});
+                    // }
+                    })
+                .then(() => deleteRequests[i])
+                .then(r=> {
+                    // if (r) {
+                        // console.log("moveMultipleIntoPlaylist: insert success", i, r);     // insert result
+                        successCallback({operation: 'insert', data: r, videoId: `${videoIds[i]}`, videoItemId: `${videoItemIds[i]}`});
+                    // }
+                    });
+        }
+
+        // sequence.then(
+        //     r => console.log("sequence success", r),
+        //     r => console.log("sequence failure", r)
+        // );
+            // r => successCallback({operation: 'delete', data: r, videoId: `${videoIds[videoIds.length - 1]}`, videoItemId: `${videoItemIds[videoItemIds.length - 1]}`}),
+            //     r => failureCallback(r))
 
         //moveMultipleIntoPlaylist(videoItemIds, videoIds, this.state.moveToPlaylistId).then(this.moveSuccess, this.moveFailure);
 
