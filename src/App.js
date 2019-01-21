@@ -4,6 +4,7 @@ import Playlists from './components/Playlists';
 import Videos from './components/Videos';
 import { BrowserRouter as Router, Route, Link, Switch } from 'react-router-dom';
 import Channels from './components/Channels';
+import TwinVideos from "./components/TwinVideos";
 
 /*
     gapi.load
@@ -84,6 +85,7 @@ class App extends Component {
     };
 
     authorize = () => {
+
         console.log('authorize');
 
         let auth = window.gapi.auth2.getAuthInstance();
@@ -193,6 +195,11 @@ class App extends Component {
                                 Playlists
                             </Link>
                         )}
+                        {isAuthorized && (
+                            <Link className="header-link" to="/videos2">
+                                Videos
+                            </Link>
+                        )}
                     </div>
                     <div className="content">
                         {!isAuthorized && (
@@ -235,6 +242,15 @@ class App extends Component {
                                 path="/videos/:playlistid"
                                 render={props => (
                                     <Videos
+                                        {...props}
+                                        isAuthorized={isAuthorized}
+                                    />
+                                )}
+                            />
+                            <Route
+                                path="/videos2"
+                                render={props => (
+                                    <TwinVideos
                                         {...props}
                                         isAuthorized={isAuthorized}
                                     />

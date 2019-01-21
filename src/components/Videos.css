@@ -1,3 +1,7 @@
+.videos {
+    border: 1px solid #aaa;
+}
+
 .videos select {
     margin-left: 10px;
 }
@@ -9,4 +13,31 @@
 .videos .filter,
 .videos .playlist-selector {
     margin-bottom: 10px;
+}
+
+
+.row {
+    display: flex;
+    flex-direction: row;
+    /*margin: 5px 0;*/
+    padding: 5px;
+}
+
+.row:hover {
+    background-color: #fffb72;
+}
+
+
+.row-0 {
+    background-color: #cccccc;
+}
+
+.row-0 {
+    background-color: #eeeeee;
+}
+
+.video-title {
+    flex-grow: 2;
+    margin-left: 1em;
+    margin-right: 1em;
 }
