@@ -2,19 +2,34 @@
     border: 1px solid #aaa;
 }
 
-.videos select {
-    margin-left: 10px;
-}
+/*.videos select {*/
+    /*margin-left: 10px;*/
+/*}*/
 
-.videos button {
-    margin-left: 10px;
-}
+/*.videos button {*/
+    /*margin-left: 10px;*/
+/*}*/
 
+/*
 .videos .filter,
 .videos .playlist-selector {
     margin-bottom: 10px;
 }
+*/
 
+.playlist-selector select {
+    font-size: 1.25em;
+    font-weight: bold;
+}
+
+.batch-actions {
+    display: flex;
+    flex-direction: row;
+}
+
+.batch-actions button {
+    margin-left: 10px;
+}
 
 .row {
     display: flex;

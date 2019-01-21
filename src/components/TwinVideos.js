@@ -311,7 +311,7 @@ class TwinVideos extends Component {
             return <div />;
         } else {
             return (
-                <div class="lists">
+                <div className="lists">
                 {
                     lists.map((list, listIndex) => {
                         let filt = list.filter.toLowerCase();
@@ -319,29 +319,44 @@ class TwinVideos extends Component {
                             .filter(video => video.snippet.title.toLowerCase().indexOf(filt) > -1)
                             .sort(snippetTitleSort);
                         return (
-                            <div className="videos">
+                            <div className="videos" key={listIndex}>
+                                {playlists &&
                                 <div className="playlist-selector">
-                                    {playlists && (
-                                        <select onChange={(event) => this.setPlaylist(event, listIndex)}>
-                                            <option defaultValue={list.playlistId}>select playlist...</option>
-                                            {playlists.map((p, i) => <option key={i} value={p.id}>{p.snippet.title}</option>)}
-                                        </select>
-                                    )}
+                                    <select onChange={(event) => this.setPlaylist(event, listIndex)}>
+                                        <option defaultValue={list.playlistId}>select playlist...</option>
+                                        {playlists.map((p, i) => <option key={i} value={p.id}>{p.snippet.title}</option>)}
+                                    </select>
+                                    {list.videos &&
+                                    <div>
+                                        There are {list.videos.length} videos in this playlist.
+                                    </div>}
                                 </div>
+                                }
                                 {list.videos &&
                                 <Fragment>
-                                    <h3>{list.videos.length} videos</h3>
-                                    <button onClick={() => this.refresh(listIndex)}>refresh</button>
-                                    <div className="filter">
-                                        filter: <input type="text" defaultValue={list.filter} onKeyUp={(event) => this.updateFilter(event, listIndex)}/>
+                                    {/*<button onClick={() => this.refresh(listIndex)}>refresh</button>*/}
+                                    <div className="filtering">
+                                        <div className="filter">
+                                            Filter: <input type="text" defaultValue={list.filter} onKeyUp={(event) => this.updateFilter(event, listIndex)} />
+                                            <button>clear</button>
+                                            {visibleVideos.length} videos shown
+                                        </div>
+                                        {visibleVideos.length &&
+                                        <div className="batch-actions">
+                                            Apply to all videos shown below:
+                                            <button title="remove shown videos from the playlist">remove all</button>
+                                            <button>copy all ▶</button>
+                                            <button>move all ▶</button>
+                                        </div>
+                                        }
                                     </div>
-                                    <div class="rows">
+                                    <div className="rows">
                                     {
                                         visibleVideos.map((video, index) =>
                                             <div key={index} className={`row row-${index % 2}`}>
-                                                {listIndex % 2 ? <div>MOVE</div> : <div>DEL</div>}
+                                                {listIndex % 2 ? <div>◀ MOVE ◀ COPY</div> : <div>DEL</div>}
                                                 <div className="video-title">{video.snippet.title}</div>
-                                                {listIndex % 2 ? <div>DEL</div> : <div>MOVE</div>}
+                                                {listIndex % 2 ? <div>DEL</div> : <div>COPY ▶ MOVE ▶</div>}
                                             </div>
                                         )
                                     }
