@@ -1,5 +1,25 @@
+.infos button,
+.filtering button,
+.batch-actions button,
+.sorting button {
+    margin: 0 5px;
+}
+
+.lists {
+    width: 100%;
+    display: grid;
+    /*flex-direction: row;*/
+    grid-template-columns: 1fr 1fr;
+    grid-column-gap: 10px;
+}
+
 .videos {
     border: 1px solid #aaa;
+    padding: 5px;
+}
+
+.videos > div {
+    margin: 5px 0;
 }
 
 /*.videos select {*/
@@ -18,7 +38,17 @@
 */
 
 .playlist-selector select {
-    font-size: 1.25em;
+    /*font-size: 1.25em;*/
+    font-size: 1em;
+    font-weight: bold;
+}
+
+.sorting a {
+    margin-left: 10px;
+    text-decoration: none;
+}
+
+.sorting a.active {
     font-weight: bold;
 }
 
@@ -27,15 +57,11 @@
     flex-direction: row;
 }
 
-.batch-actions button {
-    margin-left: 10px;
-}
-
 .row {
     display: flex;
     flex-direction: row;
     /*margin: 5px 0;*/
-    padding: 5px;
+    padding: 5px 5px 6px 5px;
 }
 
 .row:hover {
@@ -44,11 +70,11 @@
 
 
 .row-0 {
-    background-color: #cccccc;
+    /*background-color: #E5E5FB;*/
 }
 
-.row-0 {
-    background-color: #eeeeee;
+.row-1 {
+    background-color: #ffffff;
 }
 
 .video-title {

@@ -353,19 +353,66 @@ export function moveIntoPlaylist(videoItemId, videoId, moveToPlaylistId) {
     //          "statusText":null}
 }
 
+
+export function copyMultipleIntoPlaylist(
+    videoItemIds,
+    videoIds,
+    moveToPlaylistId,
+    insertSuccessCallback,
+    failureCallback) {
+
+    console.log('copyMultipleIntoPlaylist', videoItemIds, videoIds, moveToPlaylistId);
+
+    if (!moveToPlaylistId) return;
+
+    let insertRequests = [];
+    for (let i = 0; i < videoIds.length; i++) {
+        insertRequests.push(
+            buildApiRequest(
+                'POST',
+                '/youtube/v3/playlistItems',
+                {
+                    part: 'snippet',
+                },
+                {
+                    'snippet.playlistId': moveToPlaylistId,
+                    'snippet.resourceId.kind': 'youtube#video',
+                    'snippet.resourceId.videoId': videoIds[i],
+                }
+            )
+        );
+    }
+
+    // SEQUENCE:
+
+    // Start off with a promise that always resolves
+    let sequence = Promise.resolve();
+
+    for (let i = 0; i < insertRequests.length; i++) {
+        sequence = sequence
+            .then(() => insertRequests[i])
+            .then(t => {
+                insertSuccessCallback({
+                    // operation: 'delete',
+                    data: t,
+                    videoId: `${videoIds[i]}`,
+                    videoItemId: `${videoItemIds[i]}`,
+                });
+            });
+    }
+
+}
+
+
 export function moveMultipleIntoPlaylist(
     videoItemIds,
     videoIds,
     moveToPlaylistId,
-    successCallback,
-    failureCallback
-) {
-    console.log(
-        'moveMultipleIntoPlaylist',
-        videoItemIds,
-        videoIds,
-        moveToPlaylistId
-    );
+    insertSuccessCallback,
+    deleteSuccessCallback,
+    failureCallback) {
+
+    console.log('moveMultipleIntoPlaylist', videoItemIds, videoIds, moveToPlaylistId);
 
     if (!moveToPlaylistId) return;
 
@@ -396,44 +443,10 @@ export function moveMultipleIntoPlaylist(
         );
     }
 
-    /*
-        // does not vowkr completely
-        return Promise.sequence(
-            insertRequests
-        ).then(result => {
-                console.log("moveMultipleIntoPlaylist: promise.then, result", result);
-                return Promise.all(deleteRequests).then(
-                    deleteResult => {
-                        console.log("moveMultipleIntoPlaylist: deleteRequests.then, deleteResult", deleteResult);
-                        return deleteResult;
-                    }
-                );
-            }
-        );
-*/
-
     // SEQUENCE:
 
     // Start off with a promise that always resolves
     let sequence = Promise.resolve();
-
-    /*
-        for (let i=0; i<insertRequests.length; i++) {
-            sequence = sequence.then(t => {
-                if (t) {
-                    // console.log("moveMultipleIntoPlaylist: delete success", i, t);     // delete result
-                    successCallback({operation: 'delete', data: t, videoId: `${videoIds[i]}`, videoItemId: `${videoItemIds[i]}`});
-                }
-                return insertRequests[i];
-            }).then(r=> {
-                if (r) {
-                    // console.log("moveMultipleIntoPlaylist: insert success", i, r);     // insert result
-                    successCallback({operation: 'insert', data: r, videoId: `${videoIds[i]}`, videoItemId: `${videoItemIds[i]}`});
-                }
-                return deleteRequests[i];
-            });
-        }
-*/
 
     for (let i = 0; i < insertRequests.length; i++) {
         sequence = sequence
@@ -441,8 +454,8 @@ export function moveMultipleIntoPlaylist(
             .then(t => {
                 // if (t) {
                 // console.log("moveMultipleIntoPlaylist: delete success", i, t);     // delete result
-                successCallback({
-                    operation: 'delete',
+                insertSuccessCallback({
+                    // operation: 'delete',
                     data: t,
                     videoId: `${videoIds[i]}`,
                     videoItemId: `${videoItemIds[i]}`,
@@ -453,8 +466,8 @@ export function moveMultipleIntoPlaylist(
             .then(r => {
                 // if (r) {
                 // console.log("moveMultipleIntoPlaylist: insert success", i, r);     // insert result
-                successCallback({
-                    operation: 'insert',
+                deleteSuccessCallback({
+                    // operation: 'insert',
                     data: r,
                     videoId: `${videoIds[i]}`,
                     videoItemId: `${videoItemIds[i]}`,
@@ -463,27 +476,4 @@ export function moveMultipleIntoPlaylist(
             });
     }
 
-    // sequence.then(
-    //     r => console.log("sequence success", r),
-    //     r => console.log("sequence failure", r)
-    // );
-    // r => successCallback({operation: 'delete', data: r, videoId: `${videoIds[videoIds.length - 1]}`, videoItemId: `${videoItemIds[videoItemIds.length - 1]}`}),
-    //     r => failureCallback(r))
-
-    //moveMultipleIntoPlaylist(videoItemIds, videoIds, this.state.moveToPlaylistId).then(this.moveSuccess, this.moveFailure);
-
-    //return sequence;
-
-    // {
-    //  "result":{
-    //      "error":{
-    //          "errors":[
-    //              {"domain":"youtube.playlistItem","reason":"playlistIdRequired",
-    //              "message":"Playlist id not specified."}],
-    //          "code":400,
-    //          "message":"Playlist id not specified."}},
-    //          "body":"{\n \"error\": {\n  \"errors\": [\n   {\n    \"domain\": \"youtube.playlistItem\",\n    \"reason\": \"playlistIdRequired\",\n    \"message\": \"Playlist id not specified.\"\n   }\n  ],\n  \"code\": 400,\n  \"message\": \"Playlist id not specified.\"\n }\n}\n",
-    //          "headers":{"date":"Thu, 17 Jan 2019 13:26:34 GMT","content-encoding":"gzip","server":"GSE","content-type":"application/json; charset=UTF-8","vary":"Origin, X-Origin","cache-control":"private, max-age=0","content-length":"150","expires":"Thu, 17 Jan 2019 13:26:34 GMT"},
-    //          "status":400,
-    //          "statusText":null}
 }

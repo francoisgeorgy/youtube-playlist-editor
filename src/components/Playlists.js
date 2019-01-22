@@ -11,6 +11,7 @@ import './Playlists.css';
  * Display the list of playlists of the authorized user.
  */
 class Playlists extends Component {
+
     constructor(props) {
         super(props);
         console.log('Playlists.constructor', props);

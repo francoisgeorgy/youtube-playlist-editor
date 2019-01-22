@@ -16,6 +16,7 @@ import './Videos.css';
  * Display the list of videos for a playlist.
  */
 class Videos extends Component {
+
     constructor(props) {
         super(props);
         // console.log("Videos.constructor", props);
@@ -574,8 +575,7 @@ class Videos extends Component {
                                                 onClick={() =>
                                                     this.movep(
                                                         video.id,
-                                                        video.contentDetails
-                                                            .videoId,
+                                                        video.contentDetails.videoId,
                                                         moveToPlaylistId
                                                     )
                                                 }

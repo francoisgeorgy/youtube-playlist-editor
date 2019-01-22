@@ -5,6 +5,11 @@ import Videos from './components/Videos';
 import { BrowserRouter as Router, Route, Link, Switch } from 'react-router-dom';
 import Channels from './components/Channels';
 import TwinVideos from "./components/TwinVideos";
+// import { library } from '@fortawesome/fontawesome-svg-core'
+// import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+//
+// library.add(faAngleDoubleRight);
+
 
 /*
     gapi.load
