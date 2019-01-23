@@ -229,58 +229,6 @@ export function executeRequest(request, callback, callbackError) {
 }
 
 /**
- *
- * @param requests array of requests
- */
-export function executeRequestsInBatch(requests, callback, callbackError) {
-    console.log(
-        'executeRequestsInBatch',
-        requests.length,
-        callback,
-        callbackError
-    );
-
-    let batch = window.gapi.client.newBatch();
-
-    console.log('executeRequestsInBatch newBatch', batch);
-
-    for (let i = 0; i < requests.length; i++) {
-        console.log('executeRequestsInBatch, add req' + i);
-        batch.add(requests[i]);
-    }
-
-    console.log('executeRequestsInBatch, will execute', batch);
-
-    batch.execute(function(
-        responseMap,
-        rawBatchResponse,
-        callback,
-        callbackError
-    ) {
-        console.log('batch.execute callback', responseMap, rawBatchResponse);
-        /*
-                        if (data) {
-                            if (data.error) {
-                                console.warn(`batch.execute callback: ${data.error.code} ${data.error.message}`);
-                                // if (callbackError) {
-                                //     callbackError(data.error);
-                                // }
-                            } else {
-                                console.log('batch.execute callback: no error');
-                                // if (callback) callback(data);
-                                // if (data.nextPageToken) {
-                                //     console.log('get next page', data.nextPageToken);
-                                //     defineRequest(data.nextPageToken);
-                                // }
-                            }
-                        } else {
-                            if (callback) callback();
-                        }
-            */
-    });
-}
-
-/**
  * Move the video to another playlist. The video will be removed from the current playlist.
  * @param videoItemId ID of the video-item in the current playlist
  * @param videoId ID of the video
@@ -306,24 +254,6 @@ export function moveIntoPlaylist(videoItemId, videoId, moveToPlaylistId) {
     let deleteRequest = buildApiRequest('DELETE', '/youtube/v3/playlistItems', {
         id: videoItemId,
     });
-    /*
-        return new Promise(function(resolve, reject) {
-            console.log("moveIntoPlaylist: calling insertRequest");
-            insertRequest
-                .then(function () {
-                    console.log("moveIntoPlaylist: calling deleteRequest");
-                    return deleteRequest
-                        .then(function () {
-                            console.log("moveIntoPlaylist: deleteRequest.then, resolve");
-                            resolve('OK');
-                        });
-                })
-                .catch(function (reason) {
-                    console.log("moveIntoPlaylist: move failed, reject", JSON.stringify(reason));
-                    reject(reason.result ? reason.result.error.message : "unknow reason");
-                });
-        });
-*/
 
     return insertRequest.then(insertResponse => {
         console.log(
@@ -339,18 +269,6 @@ export function moveIntoPlaylist(videoItemId, videoId, moveToPlaylistId) {
         });
     });
 
-    // {
-    //  "result":{
-    //      "error":{
-    //          "errors":[
-    //              {"domain":"youtube.playlistItem","reason":"playlistIdRequired",
-    //              "message":"Playlist id not specified."}],
-    //          "code":400,
-    //          "message":"Playlist id not specified."}},
-    //          "body":"{\n \"error\": {\n  \"errors\": [\n   {\n    \"domain\": \"youtube.playlistItem\",\n    \"reason\": \"playlistIdRequired\",\n    \"message\": \"Playlist id not specified.\"\n   }\n  ],\n  \"code\": 400,\n  \"message\": \"Playlist id not specified.\"\n }\n}\n",
-    //          "headers":{"date":"Thu, 17 Jan 2019 13:26:34 GMT","content-encoding":"gzip","server":"GSE","content-type":"application/json; charset=UTF-8","vary":"Origin, X-Origin","cache-control":"private, max-age=0","content-length":"150","expires":"Thu, 17 Jan 2019 13:26:34 GMT"},
-    //          "status":400,
-    //          "statusText":null}
 }
 
 
@@ -383,8 +301,6 @@ export function copyMultipleIntoPlaylist(
         );
     }
 
-    // SEQUENCE:
-
     // Start off with a promise that always resolves
     let sequence = Promise.resolve();
 
@@ -393,7 +309,6 @@ export function copyMultipleIntoPlaylist(
             .then(() => insertRequests[i])
             .then(t => {
                 insertSuccessCallback({
-                    // operation: 'delete',
                     data: t,
                     videoId: `${videoIds[i]}`,
                     videoItemId: `${videoItemIds[i]}`,
@@ -443,8 +358,6 @@ export function moveMultipleIntoPlaylist(
         );
     }
 
-    // SEQUENCE:
-
     // Start off with a promise that always resolves
     let sequence = Promise.resolve();
 
@@ -452,27 +365,71 @@ export function moveMultipleIntoPlaylist(
         sequence = sequence
             .then(() => insertRequests[i])
             .then(t => {
-                // if (t) {
-                // console.log("moveMultipleIntoPlaylist: delete success", i, t);     // delete result
                 insertSuccessCallback({
-                    // operation: 'delete',
                     data: t,
                     videoId: `${videoIds[i]}`,
                     videoItemId: `${videoItemIds[i]}`,
                 });
-                // }
             })
             .then(() => deleteRequests[i])
             .then(r => {
-                // if (r) {
-                // console.log("moveMultipleIntoPlaylist: insert success", i, r);     // insert result
                 deleteSuccessCallback({
-                    // operation: 'insert',
                     data: r,
                     videoId: `${videoIds[i]}`,
                     videoItemId: `${videoItemIds[i]}`,
                 });
-                // }
+            });
+    }
+
+}
+
+
+
+
+export function removeMultipleFromPlaylist(
+    videoItemIds,
+    videoIds,
+    playlistId,
+    successCallback,
+    failureCallback) {
+
+    console.log('removeMultipleFromPlaylist', videoItemIds, videoIds, playlistId);
+
+    if (!playlistId) return;
+
+    let deleteRequests = [];
+    for (let i = 0; i < videoItemIds.length; i++) {
+        deleteRequests.push(
+            buildApiRequest(
+                'DELETE',
+                '/youtube/v3/playlistItems',
+                {
+                    idx: videoItemIds[i],
+                }
+            )
+        );
+    }
+
+    let sequence = Promise.resolve();
+    for (let i = 0; i < deleteRequests.length; i++) {
+        sequence = sequence
+            .then(() => deleteRequests[i])
+            .then(r => {
+                successCallback({
+                    data: r,
+                    videoId: `${videoIds[i]}`,
+                    videoItemId: `${videoItemIds[i]}`,
+                });
+            })
+            .catch(function(reason) {
+                console.log("remove failure", reason);
+                if (failureCallback) {
+                    failureCallback({
+                        error: reason.result.error,
+                        videoId: `${videoIds[i]}`,
+                        videoItemId: `${videoItemIds[i]}`,
+                    })
+                }
             });
     }
 

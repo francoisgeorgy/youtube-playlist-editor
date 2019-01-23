@@ -4,9 +4,7 @@ import {
     buildPlaylistsRequest,
     buildPlaylistItemsRequest,
     executeRequest,
-    executeRequestsInBatch,
     buildPlaylistNameRequest,
-    insertInPlaylist,
     moveIntoPlaylist,
     moveMultipleIntoPlaylist,
 } from '../utils/gapi';
