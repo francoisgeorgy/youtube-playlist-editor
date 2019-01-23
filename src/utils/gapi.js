@@ -233,7 +233,9 @@ export function executeRequest(request, callback, callbackError) {
  * @param videoItemId ID of the video-item in the current playlist
  * @param videoId ID of the video
  */
+/*
 export function moveIntoPlaylist(videoItemId, videoId, moveToPlaylistId) {
+
     console.log('moveIntoPlaylist', videoItemId, videoId, moveToPlaylistId);
 
     if (!moveToPlaylistId) return;
@@ -270,13 +272,13 @@ export function moveIntoPlaylist(videoItemId, videoId, moveToPlaylistId) {
     });
 
 }
-
+*/
 
 export function copyMultipleIntoPlaylist(
     videoItemIds,
     videoIds,
     moveToPlaylistId,
-    insertSuccessCallback,
+    successCallback,
     failureCallback) {
 
     console.log('copyMultipleIntoPlaylist', videoItemIds, videoIds, moveToPlaylistId);
@@ -304,20 +306,69 @@ export function copyMultipleIntoPlaylist(
     // Start off with a promise that always resolves
     let sequence = Promise.resolve();
 
+/*
     for (let i = 0; i < insertRequests.length; i++) {
-        sequence = sequence
-            .then(() => insertRequests[i])
-            .then(t => {
-                insertSuccessCallback({
-                    data: t,
+        sequence = sequence.then(() => insertRequests[i]);
+    }
+*/
+
+/*
+    sequence = sequence
+        .then(() => {
+            console.log("copyMultipleIntoPlaylist: call insertSuccessCallback");
+            insertSuccessCallback();
+        })
+        .catch(function(reason) {
+            console.log("copy failure", reason);
+            if (failureCallback) {
+                failureCallback({
+                    error: reason.result.error,
                     videoId: `${videoIds[i]}`,
                     videoItemId: `${videoItemIds[i]}`,
-                });
+                })
+            }
+        });
+*/
+
+
+        for (let i = 0; i < insertRequests.length; i++) {
+            sequence = sequence
+                .then(() => insertRequests[i]);
+                // .then(() => {
+                //     console.log("copyMultipleIntoPlaylist: call insertSuccessCallback");
+                //     insertSuccessCallback();
+                // })
+                // .catch(function(reason) {
+                //     console.log("copy failure", reason);
+                //     if (failureCallback) {
+                //         failureCallback({
+                //             error: reason.result.error,
+                //             videoId: `${videoIds[i]}`,
+                //             videoItemId: `${videoItemIds[i]}`,
+                //         })
+                //     }
+                // });
+        }
+
+        sequence = sequence
+            .then(() => {
+                console.log("copyMultipleIntoPlaylist: success");
+                if (successCallback) {
+                    successCallback();
+                }
+            })
+            .catch(function(reason) {
+                console.log("copyMultipleIntoPlaylist: failure", reason);
+                if (failureCallback) {
+                    failureCallback({
+                        error: reason.result.error //,
+                        // videoId: `${videoIds[i]}`,
+                        // videoItemId: `${videoItemIds[i]}`,
+                    })
+                }
             });
-    }
 
 }
-
 
 export function moveMultipleIntoPlaylist(
     videoItemIds,
@@ -365,26 +416,69 @@ export function moveMultipleIntoPlaylist(
         sequence = sequence
             .then(() => insertRequests[i])
             .then(t => {
-                insertSuccessCallback({
+                console.log("moveMultipleIntoPlaylist: call insertSuccessCallback");
+                insertSuccessCallback(/*{
                     data: t,
                     videoId: `${videoIds[i]}`,
                     videoItemId: `${videoItemIds[i]}`,
-                });
+                }*/);
             })
             .then(() => deleteRequests[i])
             .then(r => {
-                deleteSuccessCallback({
+                deleteSuccessCallback(/*{
                     data: r,
                     videoId: `${videoIds[i]}`,
                     videoItemId: `${videoItemIds[i]}`,
-                });
+                }*/);
+            })
+            .catch(function(reason) {
+                console.log("move failure", reason);
+                if (failureCallback) {
+                    failureCallback({
+                        error: reason.result.error,
+                        videoId: `${videoIds[i]}`,
+                        videoItemId: `${videoItemIds[i]}`,
+                    })
+                }
             });
     }
 
+    // sequence =
+
+/*
+    for (let i = 0; i < insertRequests.length; i++) {
+        sequence = sequence
+            .then(() => insertRequests[i])
+            .then(t => {
+                console.log("moveMultipleIntoPlaylist: call insertSuccessCallback");
+                insertSuccessCallback(/!*{
+                    data: t,
+                    videoId: `${videoIds[i]}`,
+                    videoItemId: `${videoItemIds[i]}`,
+                }*!/);
+            })
+            .then(() => deleteRequests[i])
+            .then(r => {
+                deleteSuccessCallback(/!*{
+                    data: r,
+                    videoId: `${videoIds[i]}`,
+                    videoItemId: `${videoItemIds[i]}`,
+                }*!/);
+            })
+            .catch(function(reason) {
+                console.log("move failure", reason);
+                if (failureCallback) {
+                    failureCallback({
+                        error: reason.result.error,
+                        videoId: `${videoIds[i]}`,
+                        videoItemId: `${videoItemIds[i]}`,
+                    })
+                }
+            });
+    }
+*/
+
 }
-
-
-
 
 export function removeMultipleFromPlaylist(
     videoItemIds,
@@ -404,7 +498,7 @@ export function removeMultipleFromPlaylist(
                 'DELETE',
                 '/youtube/v3/playlistItems',
                 {
-                    idx: videoItemIds[i],
+                    id: videoItemIds[i],
                 }
             )
         );
@@ -415,11 +509,11 @@ export function removeMultipleFromPlaylist(
         sequence = sequence
             .then(() => deleteRequests[i])
             .then(r => {
-                successCallback({
+                successCallback(/*{
                     data: r,
                     videoId: `${videoIds[i]}`,
                     videoItemId: `${videoItemIds[i]}`,
-                });
+                }*/);
             })
             .catch(function(reason) {
                 console.log("remove failure", reason);

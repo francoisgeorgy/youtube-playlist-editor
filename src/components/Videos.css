@@ -7,12 +7,20 @@
     float: right;
 }
 
+.sync {
+    float: right;
+}
+
 .infos button,
 .filtering button,
-.batch-actions button,
-.sorting button {
+.batch-actions button {
     margin: 0 5px;
 }
+
+.sorting button {
+    /*margin: 0 5px;*/
+}
+
 
 .lists {
     width: 100%;
@@ -52,14 +60,6 @@
     font-weight: bold;
 }
 
-.sorting a {
-    margin-left: 10px;
-    text-decoration: none;
-}
-
-.sorting a.active {
-    font-weight: bold;
-}
 
 .batch-actions {
     display: flex;

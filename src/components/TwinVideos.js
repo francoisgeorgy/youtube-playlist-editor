@@ -79,18 +79,22 @@ class TwinVideos extends Component {
             isAuthorized: false,
             videosLoading: false,
             playlists: null,
+            sync: false,
             lists: [{
                 playlistId: null,
                 videos: [],
-                filter: ''
+                filter: '',
+                sortMethod: SORT_BY_SNIPPET_TITLE,
+                sortDirection: SORT_ASCENDING,
+                errorMessage: null
             },{
                 playlistId: null,
                 videos: [],
-                filter: ''
-            }],
-            sortMethod: SORT_BY_SNIPPET_TITLE,
-            sortDirection: SORT_ASCENDING,
-            errorMessage: null
+                filter: '',
+                sortMethod: SORT_BY_SNIPPET_TITLE,
+                sortDirection: SORT_ASCENDING,
+                errorMessage: null
+            }]
         };
     }
 
@@ -137,18 +141,22 @@ class TwinVideos extends Component {
         }
     }
 
-    setSortMethod = (method) => {
+    setSortMethod = (listIndex, method) => {
         // if same method, then flip the direction
-        if (this.state.sortMethod === method) {
-            this.setState({sortDirection: !this.state.sortDirection});
-        } else {
-            this.setState({sortMethod: method});
-        }
+        this.setState(
+            produce(draft => {
+                if (draft.lists[listIndex].sortMethod === method) {
+                    draft.lists[listIndex].sortDirection = !draft.lists[listIndex].sortDirection;
+                } else {
+                    draft.lists[listIndex].sortMethod = method;
+                }
+            })
+        );
     };
 
-    getSortFunction = () => {
-        let asc = this.state.sortDirection;
-        switch(this.state.sortMethod) {
+    getSortFunction = (listIndex) => {
+        let asc = this.state.lists[listIndex].sortDirection;
+        switch(this.state.lists[listIndex].sortMethod) {
             case SORT_BY_SNIPPET_TITLE : return asc ? snippetTitleSort : snippetTitleSortReverse;
             case SORT_BY_SNIPPET_PUBLISHED_AT : return asc ? snippetPublishedAtSort : snippetPublishedAtSortReverse;
             case SORT_BY_SNIPPET_POSITION : return asc ? snippetPositionSort : snippetPositionSortReverse;
@@ -189,19 +197,6 @@ class TwinVideos extends Component {
             })
         );
 
-/*
-        if (currentToken === undefined || !currentToken) {
-            console.log('TwinVideos.storeVideos: set new videos list');
-            this.setState({ videos: list });
-        } else {
-            console.log('TwinVideos.storeVideos: append videos to current list');
-            this.setState(prevState => ({
-                videos: [...prevState.videos, ...list],
-                // videos: prevState.videos.concat(list)
-            }));
-        }
-*/
-
         if (data.nextPageToken) {
             console.log('TwinVideos.storeVideos: get next page with token ' + data.nextPageToken);
             this.retrieveVideos(listIndex, data.nextPageToken);
@@ -224,113 +219,22 @@ class TwinVideos extends Component {
     };
 
     refreshPlaylist = (listIndex) => {
+        console.log(`refreshPlaylist(${listIndex})`);
         this.setState(
             produce(draft => {
-                if (draft.errorMessage) draft.errorMessage = null;
+                draft.lists[listIndex].errorMessage = null;
                 draft.lists[listIndex].videos = [];
             }),
             () => this.retrieveVideos(listIndex)
         );
     };
 
-/*
-
-    removeError = error => {
-        console.log('TwinVideos.removeError', error.code, error.message);
-    };
-
-    remove = videoItemId => {
-        console.log('TwinVideos.remove', videoItemId);
-        if (!videoItemId) return;
-        let request = buildApiRequest('DELETE', '/youtube/v3/playlistItems', {
-            id: videoItemId,
-        });
-        executeRequest(
-            request,
-            () => this.removeFromPlaylistState(videoItemId),
-            this.removeError
-        );
-    };
-*/
-
-    /*
-        move = (videoItemId, videoId, playlistId) => {
-            console.log('movep', videoItemId, videoId, playlistId);
-
-            moveIntoPlaylist(videoItemId, videoId, playlistId)
-                .then(function(response) {
-                    console.log('movep.moveIntoPlaylist resolved', response);
-                })
-                .catch(function(reason) {
-                    console.log(
-                        'movep.moveIntoPlaylist rejected',
-                        reason,
-                        reason.result.error.message
-                    );
-                });
-        };
-
-        moveSuccess = ({ operation, data, videoId, videoItemId }) => {
-            console.log('moveSuccess', operation, videoId, videoItemId, data);
-
-            switch (operation) {
-                case 'insert':
-                    // console.log("insert video ", videoId, data.result.snippet.resourceId.videoId);
-                    break;
-                case 'delete':
-                    // console.log("delete video ", videoItemId);
-                    this.removeFromPlaylistState(videoItemId);
-                    break;
-                default:
-                    console.error(`moveSuccess: unknown operation ${operation}`);
-            }
-
-        };
-
-        moveFailure = r => {
-            console.log('moveFailure', r);
-        };
-
-        moveVisible = () => {
-            console.log('TwinVideos.moveVisible');
-
-            let videoItemIds = [];
-            let videoIds = [];
-
-            this.state.videos
-                .filter(
-                    video =>
-                        video.snippet.title
-                            .toLowerCase()
-                            .indexOf(this.state.filter.toLowerCase()) > -1
-                )
-                .map(video => {
-                    videoItemIds.push(video.id);
-                    if (!videoIds.includes(video.contentDetails.videoId))
-                        videoIds.push(video.contentDetails.videoId); // avoid pushing duplicates
-                });
-
-            console.log('moveVisible', videoIds, videoItemIds);
-
-            console.log('moveMultipleIntoPlaylist before');
-            // moveMultipleIntoPlaylist(videoItemIds, videoIds, this.state.playlistId).then(this.moveSuccess, this.moveFailure);
-            moveMultipleIntoPlaylist(
-                videoItemIds,
-                videoIds,
-                this.state.moveToPlaylistId,
-                this.moveSuccess,
-                this.moveFailure
-            );
-            console.log('moveMultipleIntoPlaylist after');
-        };
-    */
-
     setPlaylist = (event, listIndex) => {
         console.log("TwinVideos.setMoveToList", event.target.value, listIndex, this.state);
         let id = event.target.value;
         this.setState(
             produce(draft => {
-                if (draft.errorMessage) draft.errorMessage = null;
+                draft.lists[listIndex].errorMessage = null;
                 // console.log("draft", draft.lists);
                 // console.log("target", event.target);
                 draft.lists[listIndex].playlistId = id;
@@ -339,35 +243,59 @@ class TwinVideos extends Component {
         );
     };
 
-
-
-    removeFromPlaylistState = (playlistIndex, videoItemId) => {
+    removeFromPlaylistState = (listIndex, videoItemIds) => {
         // console.log("TwinVideos.removeFromPlaylistState", videoItemId);
         this.setState(
             produce(draft => {
-                if (draft.errorMessage) draft.errorMessage = null;
-                let videos = draft.lists[playlistIndex].videos;
-                let i = videos.findIndex(v => v.id === videoItemId);
-                videos.splice(i, 1);
-                draft.lists[playlistIndex].videos = videos
+                let videos = draft.lists[listIndex].videos;
+                for (let i=0; i<videoItemIds.length; i++) {
+                    let k = videos.findIndex(video => video.id === videoItemIds[i]);
+                    videos.splice(k, 1);
+                }
+                draft.lists[listIndex].videos = videos;
+                draft.lists[listIndex].errorMessage = null;
             })  //,
             //() => this.retrieveVideos(playlistIndex)
         );
     };
 
-    insertSuccess = (listIndex, { operation, data, videoId, videoItemId }) => {
-        console.log('moveSuccess', operation, videoId, videoItemId, data);
-        this.refreshPlaylist(listIndex);
+    // insertSuccess = (listIndex, { operation, data, videoId, videoItemId }) => {
+    //     console.log('moveSuccess', operation, videoId, videoItemId, data);
+    //     this.refreshPlaylist(listIndex);
+    // };
+
+    // removeSuccess = (listIndex, { operation, data, videoId, videoItemId }) => {
+    //     console.log('moveSuccess', operation, videoId, videoItemId, data);
+    //     this.removeFromPlaylistState(listIndex, videoItemId);
+    // };
+
+    getVisibleIds = listIndex => {
+
+        let filter = this.state.lists[listIndex].filter.toLowerCase();
+
+        let videoItemIds = [];
+        let videoIds = [];
+
+        this.state.lists[listIndex].videos
+            .filter(video => video.snippet.title.toLowerCase().indexOf(filter) > -1)
+            .forEach(video => {
+                videoItemIds.push(video.id);
+                if (!videoIds.includes(video.contentDetails.videoId)) {
+                    videoIds.push(video.contentDetails.videoId); // avoid pushing duplicates
+                }
+            });
+
+        return {
+            videoItemIds,
+            videoIds
+        }
     };
 
-    removeSuccess = (listIndex, { operation, data, videoId, videoItemId }) => {
-        console.log('moveSuccess', operation, videoId, videoItemId, data);
-        this.removeFromPlaylistState(listIndex, videoItemId);
-    };
-
-    failure = (listItemIndex, error) => {
+    failure = (listIndex, error) => {
         this.setState(
-            {errorMessage: error.message}
+            produce(draft => {
+                draft.lists[listIndex].errorMessage = error.message;
+            })
         );
     };
 
@@ -377,7 +305,25 @@ class TwinVideos extends Component {
             [videoItemId],
             [videoId],
             this.state.lists[targetListIndex].playlistId,
-            (result) => this.insertSuccess(targetListIndex, result));
+            () => {
+                this.retrievePlaylists();   // update the number of videos per playlist displayed in the dropdown select
+                this.refreshPlaylist(targetListIndex);
+            },
+            (data) => this.failure(sourceListIndex, data.error));
+    };
+
+    copyAll = (sourceListIndex, targetListIndex) => {
+        // console.log('move', sourceListIndex, targetListIndex, videoItemId, videoId);
+        const { videoItemIds, videoIds } = this.getVisibleIds(sourceListIndex);
+        copyMultipleIntoPlaylist(
+            videoItemIds,
+            videoIds,
+            this.state.lists[targetListIndex].playlistId,
+            () => {
+                this.retrievePlaylists();   // update the number of videos per playlist displayed in the dropdown select
+                this.refreshPlaylist(targetListIndex)
+            },
+            (data) => this.failure(sourceListIndex, data.error));
     };
 
     move = (sourceListIndex, targetListIndex, videoItemId, videoId) => {
@@ -386,8 +332,29 @@ class TwinVideos extends Component {
             [videoItemId],
             [videoId],
             this.state.lists[targetListIndex].playlistId,
-            (result) => this.insertSuccess(targetListIndex, result),
-            (result) => this.removeSuccess(sourceListIndex, result));
+            () => {
+                this.retrievePlaylists();   // update the number of videos per playlist displayed in the dropdown select
+                this.refreshPlaylist(targetListIndex)
+            },
+            () => this.removeFromPlaylistState(sourceListIndex, [videoItemId]),
+            (data) => this.failure(sourceListIndex, data.error));
+    };
+
+    moveAll = (sourceListIndex, targetListIndex) => {
+        // console.log('move', sourceListIndex, targetListIndex, videoItemId, videoId);
+
+        const { videoItemIds, videoIds } = this.getVisibleIds(sourceListIndex);
+
+        moveMultipleIntoPlaylist(
+            videoItemIds,
+            videoIds,
+            this.state.lists[targetListIndex].playlistId,
+            () => {
+                this.retrievePlaylists();   // update the number of videos per playlist displayed in the dropdown select
+                this.refreshPlaylist(targetListIndex)
+            },
+            () => this.removeFromPlaylistState(sourceListIndex, videoItemIds),
+            (data) => this.failure(sourceListIndex, data.error));
     };
 
     remove = (listIndex, videoItemId, videoId) => {
@@ -396,7 +363,35 @@ class TwinVideos extends Component {
             [videoItemId],
             [videoId],
             this.state.lists[listIndex].playlistId,
-            () => this.removeSuccess(listIndex, videoItemId),
+            () => this.removeFromPlaylistState(listIndex, [videoItemId]),
+            (data) => this.failure(listIndex, data.error));
+
+    };
+
+    removeAll = (listIndex) => {
+        console.log('remove');
+
+        const { videoItemIds, videoIds } = this.getVisibleIds(listIndex);
+
+        // let filter = this.state.lists[listIndex].filter.toLowerCase();
+        //
+        // let videoItemIds = [];
+        // let videoIds = [];
+        //
+        // this.state.lists[listIndex].videos
+        //     .filter(video => video.snippet.title.toLowerCase().indexOf(filter) > -1)
+        //     .map(video => {
+        //         videoItemIds.push(video.id);
+        //         if (!videoIds.includes(video.contentDetails.videoId)) {
+        //             videoIds.push(video.contentDetails.videoId); // avoid pushing duplicates
+        //         }
+        //     });
+
+        removeMultipleFromPlaylist(
+            videoItemIds,
+            videoIds,
+            this.state.lists[listIndex].playlistId,
+            () => this.removeFromPlaylistState(listIndex, videoItemIds),
             (data) => this.failure(listIndex, data.error));
 
     };
@@ -406,44 +401,58 @@ class TwinVideos extends Component {
         let f = event.target.value;
         this.setState(
             produce(draft => {
-                if (draft.errorMessage) draft.errorMessage = null;
-                draft.lists[listIndex].filter = f;
+                for (let i=0; i<draft.lists.length; i++) {
+                    if (draft.sync || i === listIndex) {
+                        draft.lists[i].errorMessage = null;
+                        draft.lists[i].filter = f;
+                    }
+                }
+            })
+        );
+    };
+
+    clearFilter = listIndex => {
+        this.setState(
+            produce(draft => {
+                draft.lists[listIndex].filter = '';
             })
         );
     };
 
     refresh = (listIndex, clearFilter = false) => {
         console.log('refresh');
-
         if (!this.state.isAuthorized) return;
-
         this.setState(
             produce(draft => {
-                if (draft.errorMessage) draft.errorMessage = null;
                 draft.videosLoading = false;
                 draft.playlists = null;
                 for (let i=0; i<draft.lists; i++) {
                     draft.lists[i] = {
                         playlistId: null,
                         videos: [],
-                        filter: clearFilter ? '' : draft.lists[i].filter
+                        filter: clearFilter ? '' : draft.lists[i].filter,
+                        errorMessage: null
                     }
                 }
             }),
             () => this.retrievePlaylists()
         );
-
     };
 
-    dismissErrorMessage = () => {
-        this.setState({errorMessage: null});
+    dismissErrorMessage = (listIndex) => {
+        this.setState(produce(draft => {
+            draft.lists[listIndex].errorMessage = null;
+        }));
     };
+
+    toggleSync = () => {
+        this.setState({sync: !this.state.sync});
+    };
+
 
     render() {
 
-        const { isAuthorized, playlists, lists, sortMethod, sortDirection, errorMessage } = this.state;
-
-        // console.log("TwinVideos.render", videos);
+        const { isAuthorized, playlists, lists, sortDirection, sync } = this.state;
 
         if (!isAuthorized) {
             return <div />;
@@ -452,10 +461,11 @@ class TwinVideos extends Component {
                 <div className="lists">
                 {
                     lists.map((list, listIndex) => {
+                        let sortMethod = lists[listIndex].sortMethod;
                         let filt = list.filter.toLowerCase();
                         let visibleVideos = list.videos
                             .filter(video => video.snippet.title.toLowerCase().indexOf(filt) > -1)
-                            .sort(this.getSortFunction());
+                            .sort(this.getSortFunction(listIndex));
                         return (
                             <div className="videos" key={listIndex}>
                                 {playlists &&
@@ -466,9 +476,9 @@ class TwinVideos extends Component {
                                     </select>
                                 </div>
                                 }
-                                {errorMessage &&
+                                {list.errorMessage &&
                                 <div className="messages">
-                                    <div className="error">{errorMessage}<div className="dismiss"><button onClick={this.dismissErrorMessage}>dismiss</button></div></div>
+                                    <div className="error">{list.errorMessage}<div className="dismiss"><button onClick={() => this.dismissErrorMessage(listIndex)}>dismiss</button></div></div>
                                 </div>
                                 }
                                 {list.videos && list.videos.length > 0 &&
@@ -479,9 +489,14 @@ class TwinVideos extends Component {
                                     </div>
                                     {/*<button onClick={() => this.refresh(listIndex)}>refresh</button>*/}
                                     <div className="filtering">
+                                        {listIndex === 0 &&
+                                        <div className="sync">
+                                            <button onClick={this.toggleSync}>sync filter&sorting: {sync ? "ON" : "OFF"}</button>
+                                        </div>
+                                        }
                                         <div className="filter">
-                                            Filter: <input type="text" defaultValue={list.filter} onKeyUp={(event) => this.updateFilter(event, listIndex)} />
-                                            <button>clear filter</button>
+                                            Filter: <input type="text" value={list.filter} onChange={(event) => this.updateFilter(event, listIndex)} />
+                                            <button onClick={() => this.clearFilter(listIndex)}>clear filter</button>
                                             {visibleVideos.length} videos shown
                                         </div>
                                     </div>
@@ -490,30 +505,30 @@ class TwinVideos extends Component {
                                         {listIndex % 2
                                             ? <div className="batch-actions">
                                                 Apply to all videos shown below:
-                                                <button title="remove shown videos from the playlist"><i className="fas fa-trash-alt"></i> remove all</button>
-                                                <button><i className="fas fa-angle-double-left"></i> copy all</button>
-                                                <button><i className="fas fa-angle-left"></i> move all</button>
+                                                <button title="remove shown videos from the playlist" onClick={() => this.removeAll(listIndex)}><i className="fas fa-trash-alt"></i> remove all</button>
+                                                <button onClick={() => this.copyAll(listIndex, listIndex - 1)}><i className="fas fa-angle-double-left"></i> copy all</button>
+                                                <button onClick={() => this.moveAll(listIndex, listIndex - 1)}><i className="fas fa-angle-left"></i> move all</button>
                                             </div>
                                             : <div className="batch-actions">
                                                 Apply to all videos shown below:
-                                                <button title="remove shown videos from the playlist"><i className="fas fa-trash-alt"></i> remove all</button>
-                                                <button>copy all <i className="fas fa-angle-double-right"></i></button>
-                                                <button>move all <i className="fas fa-angle-right"></i></button>
+                                                <button title="remove shown videos from the playlist" onClick={() => this.removeAll(listIndex)}><i className="fas fa-trash-alt"></i> remove all</button>
+                                                <button onClick={() => this.copyAll(listIndex, listIndex + 1)}>copy all <i className="fas fa-angle-double-right"></i></button>
+                                                <button onClick={() => this.moveAll(listIndex, listIndex + 1)}>move all <i className="fas fa-angle-right"></i></button>
                                             </div>
                                         }
                                     </div>
                                     }
                                     <div className="sorting">
-                                        <button onClick={() => this.setSortMethod(SORT_BY_SNIPPET_TITLE)} className={sortMethod === SORT_BY_SNIPPET_TITLE ? "active" : ""}>
+                                        <button onClick={() => this.setSortMethod(listIndex, SORT_BY_SNIPPET_TITLE)} className={sortMethod === SORT_BY_SNIPPET_TITLE ? "text-button active" : "text-button"}>
                                             title<i className={sortDirection ? "fas fa-sort-alpha-down" : "fas fa-sort-alpha-up"}></i>
                                         </button>
-                                        <button onClick={() => this.setSortMethod(SORT_BY_SNIPPET_PUBLISHED_AT)} className={sortMethod === SORT_BY_SNIPPET_PUBLISHED_AT ? "active" : ""}>
+                                        <button onClick={() => this.setSortMethod(listIndex, SORT_BY_SNIPPET_PUBLISHED_AT)} className={sortMethod === SORT_BY_SNIPPET_PUBLISHED_AT ? "text-button active" : "text-button"}>
                                             added to playlist<i className={sortDirection ? "fas fa-sort-numeric-down" : "fas fa-sort-numeric-up"}></i>
                                         </button>
-                                        <button onClick={() => this.setSortMethod(SORT_BY_VIDEO_PUBLISHED_AT)} className={sortMethod === SORT_BY_VIDEO_PUBLISHED_AT ? "active" : ""}>
+                                        <button onClick={() => this.setSortMethod(listIndex, SORT_BY_VIDEO_PUBLISHED_AT)} className={sortMethod === SORT_BY_VIDEO_PUBLISHED_AT ? "text-button active" : "text-button"}>
                                             video created<i className={sortDirection ? "fas fa-sort-numeric-down" : "fas fa-sort-numeric-up"}></i>
                                         </button>
-                                        <button onClick={() => this.setSortMethod(SORT_BY_SNIPPET_POSITION)} className={sortMethod === SORT_BY_SNIPPET_POSITION ? "active" : ""}>
+                                        <button onClick={() => this.setSortMethod(listIndex, SORT_BY_SNIPPET_POSITION)} className={sortMethod === SORT_BY_SNIPPET_POSITION ? "text-button active" : "text-button"}>
                                             position<i className={sortDirection ? "fas fa-sort-numeric-down" : "fas fa-sort-numeric-up"}></i>
                                         </button>
                                     </div>

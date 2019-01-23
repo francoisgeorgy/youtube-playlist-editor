@@ -86,3 +86,23 @@
     color: blue;
     margin-left: 10px;
 }
+
+.text-button {
+    background-color: transparent;
+    border: none;
+    margin-right: 10px;
+    padding: 0;
+    text-decoration: none;
+    /*color: #555;*/
+    /*margin-left: 10px;*/
+    font-size: 1rem;
+    color: blue;
+}
+
+.text-button.active {
+    font-weight: bold;
+}
+
+.text-button:focus {
+    outline: none;
+}

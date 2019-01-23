@@ -369,6 +369,7 @@ class Videos extends Component {
         // let r = moveIntoPlaylist(videoItemId, videoId, moveToPlaylistId);
         // console.log("movep, r", r);
 
+/*
         moveIntoPlaylist(videoItemId, videoId, moveToPlaylistId)
             .then(function(response) {
                 console.log('movep.moveIntoPlaylist resolved', response);
@@ -380,6 +381,7 @@ class Videos extends Component {
                     reason.result.error.message
                 );
             });
+*/
     };
 
     moveSuccess = ({ operation, data, videoId, videoItemId }) => {
