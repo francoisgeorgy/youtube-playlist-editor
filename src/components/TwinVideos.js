@@ -86,14 +86,16 @@ class TwinVideos extends Component {
                 filter: '',
                 sortMethod: SORT_BY_SNIPPET_TITLE,
                 sortDirection: SORT_ASCENDING,
-                errorMessage: null
+                errorMessage: null,
+                marked: []      // list of VideoId (ID within the playlist)
             },{
                 playlistId: null,
                 videos: [],
                 filter: '',
                 sortMethod: SORT_BY_SNIPPET_TITLE,
                 sortDirection: SORT_ASCENDING,
-                errorMessage: null
+                errorMessage: null,
+                marked: []      // list of VideoId (ID within the playlist)
             }]
         };
     }
@@ -118,7 +120,7 @@ class TwinVideos extends Component {
 
         // At this point, we're in the "commit" phase, so it's safe to load the new data.
 
-        console.log(`TwinVideos.componentDidUpdate, playlistId=${this.state.playlistId}, prev=${prevState.playlistId}`, this.state);
+        // console.log(`TwinVideos.componentDidUpdate, playlistId=${this.state.playlistId}, prev=${prevState.playlistId}`, this.state);
 
         if (!this.state.isAuthorized) return;
 
@@ -243,14 +245,14 @@ class TwinVideos extends Component {
         );
     };
 
-    removeFromPlaylistState = (listIndex, videoItemIds) => {
-        // console.log("TwinVideos.removeFromPlaylistState", videoItemId);
+    removeFromPlaylistState = (listIndex, playlistItemIds) => {
+        // console.log("TwinVideos.removeFromPlaylistState", playlistItemId);
         this.setState(
             produce(draft => {
                 let videos = draft.lists[listIndex].videos;
-                for (let i=0; i<videoItemIds.length; i++) {
-                    let k = videos.findIndex(video => video.id === videoItemIds[i]);
-                    videos.splice(k, 1);
+                for (let i=0; i<playlistItemIds.length; i++) {
+                    let k = videos.findIndex(video => video.id === playlistItemIds[i]);
+                    if (k >= 0) videos.splice(k, 1);
                 }
                 draft.lists[listIndex].videos = videos;
                 draft.lists[listIndex].errorMessage = null;
@@ -259,36 +261,65 @@ class TwinVideos extends Component {
         );
     };
 
-    // insertSuccess = (listIndex, { operation, data, videoId, videoItemId }) => {
-    //     console.log('moveSuccess', operation, videoId, videoItemId, data);
+    // insertSuccess = (listIndex, { operation, data, videoId, playlistItemId }) => {
+    //     console.log('moveSuccess', operation, videoId, playlistItemId, data);
     //     this.refreshPlaylist(listIndex);
     // };
 
-    // removeSuccess = (listIndex, { operation, data, videoId, videoItemId }) => {
-    //     console.log('moveSuccess', operation, videoId, videoItemId, data);
-    //     this.removeFromPlaylistState(listIndex, videoItemId);
+    // removeSuccess = (listIndex, { operation, data, videoId, playlistItemId }) => {
+    //     console.log('moveSuccess', operation, videoId, playlistItemId, data);
+    //     this.removeFromPlaylistState(listIndex, playlistItemId);
     // };
 
     getVisibleIds = listIndex => {
 
+        console.log(`getVisibleIds(${listIndex})`, this.state);
+
         let filter = this.state.lists[listIndex].filter.toLowerCase();
 
-        let videoItemIds = [];
+        let playlistItemIds = [];
         let videoIds = [];
 
         this.state.lists[listIndex].videos
-            .filter(video => video.snippet.title.toLowerCase().indexOf(filter) > -1)
-            .forEach(video => {
-                videoItemIds.push(video.id);
-                if (!videoIds.includes(video.contentDetails.videoId)) {
-                    videoIds.push(video.contentDetails.videoId); // avoid pushing duplicates
+            .filter(playlistItem => playlistItem.snippet.title.toLowerCase().indexOf(filter) > -1)
+            .forEach(playlistItem => {
+                playlistItemIds.push(playlistItem.id);
+                if (!videoIds.includes(playlistItem.contentDetails.videoId)) {
+                    videoIds.push(playlistItem.contentDetails.videoId); // avoid pushing duplicates
                 }
             });
 
         return {
-            videoItemIds,
+            playlistItemIds,
             videoIds
         }
+    };
+
+    mark = (listIndex, playlistItemIds) => {
+        this.setState(
+            produce(draft => {
+                draft.lists[listIndex].marked = Array.isArray(playlistItemIds) ? playlistItemIds : [playlistItemIds];   // IDs within the playlist
+            })
+        );
+    };
+
+    clearMarked = (listIndex) => {
+        this.setState(
+            produce(draft => {
+                draft.lists[listIndex].marked = [];
+            })
+        );
+    };
+
+    progress = (listIndex, {videoId, playlistItemId}) => {
+        console.log("progress", videoId, playlistItemId);
+        this.setState(
+            produce(draft => {
+                let k = draft.lists[listIndex].marked.findIndex(id => id === playlistItemId);
+                // console.log("progress k", k, videoId);
+                if (k >= 0) draft.lists[listIndex].marked.splice(k, 1);
+            })
+        );
     };
 
     failure = (listIndex, error) => {
@@ -299,12 +330,14 @@ class TwinVideos extends Component {
         );
     };
 
-    copy = (sourceListIndex, targetListIndex, videoItemId, videoId) => {
-        console.log('copy', sourceListIndex, targetListIndex, videoItemId, videoId);
+    copy = (sourceListIndex, targetListIndex, playlistItemId, videoId) => {
+        console.log('copy', sourceListIndex, targetListIndex, playlistItemId, videoId);
+        this.mark(sourceListIndex, playlistItemId);
         copyMultipleIntoPlaylist(
-            [videoItemId],
+            [playlistItemId],
             [videoId],
             this.state.lists[targetListIndex].playlistId,
+            (data) => this.progress(sourceListIndex, data),
             () => {
                 this.retrievePlaylists();   // update the number of videos per playlist displayed in the dropdown select
                 this.refreshPlaylist(targetListIndex);
@@ -313,87 +346,91 @@ class TwinVideos extends Component {
     };
 
     copyAll = (sourceListIndex, targetListIndex) => {
-        // console.log('move', sourceListIndex, targetListIndex, videoItemId, videoId);
-        const { videoItemIds, videoIds } = this.getVisibleIds(sourceListIndex);
+        // console.log('move', sourceListIndex, targetListIndex, playlistItemId, videoId);
+        const { playlistItemIds, videoIds } = this.getVisibleIds(sourceListIndex);
+        this.mark(sourceListIndex, playlistItemIds);
         copyMultipleIntoPlaylist(
-            videoItemIds,
+            playlistItemIds,
             videoIds,
             this.state.lists[targetListIndex].playlistId,
+            (data) => this.progress(sourceListIndex, data),
             () => {
                 this.retrievePlaylists();   // update the number of videos per playlist displayed in the dropdown select
-                this.refreshPlaylist(targetListIndex)
+                this.refreshPlaylist(targetListIndex);
+                this.clearMarked(sourceListIndex);
             },
             (data) => this.failure(sourceListIndex, data.error));
     };
 
-    move = (sourceListIndex, targetListIndex, videoItemId, videoId) => {
-        console.log('move', sourceListIndex, targetListIndex, videoItemId, videoId);
+    move = (sourceListIndex, targetListIndex, playlistItemId, videoId) => {
+        console.log('move', sourceListIndex, targetListIndex, playlistItemId, videoId);
+        this.mark(sourceListIndex, playlistItemId);
         moveMultipleIntoPlaylist(
-            [videoItemId],
+            [playlistItemId],
             [videoId],
             this.state.lists[targetListIndex].playlistId,
+            (data) => {
+                this.progress(sourceListIndex, data);
+                this.removeFromPlaylistState(sourceListIndex, [data.playlistItemId]);
+            },
             () => {
                 this.retrievePlaylists();   // update the number of videos per playlist displayed in the dropdown select
-                this.refreshPlaylist(targetListIndex)
+                this.refreshPlaylist(targetListIndex);
+                this.clearMarked(sourceListIndex);
             },
-            () => this.removeFromPlaylistState(sourceListIndex, [videoItemId]),
             (data) => this.failure(sourceListIndex, data.error));
     };
 
     moveAll = (sourceListIndex, targetListIndex) => {
-        // console.log('move', sourceListIndex, targetListIndex, videoItemId, videoId);
-
-        const { videoItemIds, videoIds } = this.getVisibleIds(sourceListIndex);
-
+        // console.log('move', sourceListIndex, targetListIndex, playlistItemId, videoId);
+        const { playlistItemIds, videoIds } = this.getVisibleIds(sourceListIndex);
+        this.mark(sourceListIndex, playlistItemIds);
         moveMultipleIntoPlaylist(
-            videoItemIds,
+            playlistItemIds,
             videoIds,
             this.state.lists[targetListIndex].playlistId,
+            (data) => {
+                this.progress(sourceListIndex, data);
+                this.removeFromPlaylistState(sourceListIndex, [data.playlistItemId]);
+            },
             () => {
                 this.retrievePlaylists();   // update the number of videos per playlist displayed in the dropdown select
-                this.refreshPlaylist(targetListIndex)
+                this.refreshPlaylist(targetListIndex);
+                this.clearMarked(sourceListIndex);
             },
-            () => this.removeFromPlaylistState(sourceListIndex, videoItemIds),
             (data) => this.failure(sourceListIndex, data.error));
     };
 
-    remove = (listIndex, videoItemId, videoId) => {
-        console.log('remove', listIndex, videoItemId, videoId);
+    remove = (listIndex, playlistItemId, videoId) => {
+        console.log('remove', listIndex, playlistItemId, videoId);
+        this.mark(listIndex, playlistItemId);
         removeMultipleFromPlaylist(
-            [videoItemId],
+            [playlistItemId],
             [videoId],
             this.state.lists[listIndex].playlistId,
-            () => this.removeFromPlaylistState(listIndex, [videoItemId]),
+            (data) => this.progress(listIndex, data),
+            () => {
+                this.removeFromPlaylistState(listIndex, [playlistItemId]);
+                this.clearMarked(listIndex);
+            },
             (data) => this.failure(listIndex, data.error));
 
     };
 
     removeAll = (listIndex) => {
-        console.log('remove');
-
-        const { videoItemIds, videoIds } = this.getVisibleIds(listIndex);
-
-        // let filter = this.state.lists[listIndex].filter.toLowerCase();
-        //
-        // let videoItemIds = [];
-        // let videoIds = [];
-        //
-        // this.state.lists[listIndex].videos
-        //     .filter(video => video.snippet.title.toLowerCase().indexOf(filter) > -1)
-        //     .map(video => {
-        //         videoItemIds.push(video.id);
-        //         if (!videoIds.includes(video.contentDetails.videoId)) {
-        //             videoIds.push(video.contentDetails.videoId); // avoid pushing duplicates
-        //         }
-        //     });
-
+        // console.log('remove');
+        const { playlistItemIds, videoIds } = this.getVisibleIds(listIndex);
+        this.mark(listIndex, playlistItemIds);
         removeMultipleFromPlaylist(
-            videoItemIds,
+            playlistItemIds,
             videoIds,
             this.state.lists[listIndex].playlistId,
-            () => this.removeFromPlaylistState(listIndex, videoItemIds),
+            (data) => this.progress(listIndex, data),
+            () => {
+                this.removeFromPlaylistState(listIndex, playlistItemIds);
+                this.clearMarked(listIndex);
+            },
             (data) => this.failure(listIndex, data.error));
-
     };
 
     updateFilter = (event, listIndex) => {
@@ -454,6 +491,8 @@ class TwinVideos extends Component {
 
         const { isAuthorized, playlists, lists, sortDirection, sync } = this.state;
 
+        // console.log("render", lists);
+
         if (!isAuthorized) {
             return <div />;
         } else {
@@ -461,6 +500,7 @@ class TwinVideos extends Component {
                 <div className="lists">
                 {
                     lists.map((list, listIndex) => {
+                        // console.log("list.marked", list.marked);
                         let sortMethod = lists[listIndex].sortMethod;
                         let filt = list.filter.toLowerCase();
                         let visibleVideos = list.videos
@@ -534,62 +574,66 @@ class TwinVideos extends Component {
                                     </div>
                                     <div className="rows">
                                     {
-                                        visibleVideos.map((video, index) =>
-                                            <div key={index} className={`row row-${index % 2}`}>
-                                                {listIndex % 2
-                                                    ? <div>
-                                                        <button className="action-button" onClick={
-                                                            () => this.move(listIndex, listIndex - 1,
-                                                                video.id, /* ID within the playlist */
-                                                                video.contentDetails.videoId /* ID within youtube */
-                                                            )}>
-                                                            <i className="fas fa-angle-left"></i> move
-                                                        </button>
-                                                        <button className="action-button" onClick={
-                                                            () => this.copy(listIndex, listIndex - 1,
-                                                                video.id, /* ID within the playlist */
-                                                                video.contentDetails.videoId /* ID within youtube */
-                                                            )}>
-                                                            <i className="fas fa-angle-double-left"></i> copy
-                                                        </button>
-                                                      </div>
-                                                    : <div>
-                                                        <button title="remove from this playlist" onClick={
-                                                            () => this.remove(listIndex,
-                                                                video.id, /* ID within the playlist */
-                                                                video.contentDetails.videoId /* ID within youtube */
-                                                            )}>
-                                                            <i className="fas fa-trash-alt"></i>
-                                                        </button>
-                                                    </div>
-                                                }
-                                                <div className="video-title">{video.snippet.title}</div>
-                                                {listIndex % 2
-                                                    ? <div>
-                                                        <button title="remove from this playlist" onClick={
-                                                            () => this.remove(listIndex,
-                                                                video.id, /* ID within the playlist */
-                                                                video.contentDetails.videoId /* ID within youtube */
-                                                            )}>
-                                                            <i className="fas fa-trash-alt"></i>
-                                                        </button>
-                                                      </div>
-                                                    : <div>
-                                                        <button className="action-button" onClick={
-                                                            () => this.copy(listIndex, listIndex + 1,
-                                                                video.id, /* ID within the playlist */
-                                                                video.contentDetails.videoId /* ID within youtube */
-                                                            )}>copy <i className="fas fa-angle-double-right"></i>
-                                                        </button>
-                                                        <button className="action-button" onClick={
-                                                            () => this.move(listIndex, listIndex + 1,
-                                                                video.id, /* ID within the playlist */
-                                                                video.contentDetails.videoId /* ID within youtube */
-                                                            )}>move <i className="fas fa-angle-right"></i>
-                                                        </button>
-                                                      </div>
-                                                }
-                                            </div>
+                                        visibleVideos.map((video, index) => {
+                                            // console.log("video.id", video.id);
+                                            let m = list.marked.includes(video.id) ? 'marked' : '';
+                                            return (
+                                                <div key={index} className={`row row-${index % 2} ${m}`}>
+                                                    {listIndex % 2
+                                                        ? <div>
+                                                            <button className="action-button" onClick={
+                                                                () => this.move(listIndex, listIndex - 1,
+                                                                    video.id, /* ID within the playlist */
+                                                                    video.contentDetails.videoId /* ID within youtube */
+                                                                )}>
+                                                                <i className="fas fa-angle-left"></i> move
+                                                            </button>
+                                                            <button className="action-button" onClick={
+                                                                () => this.copy(listIndex, listIndex - 1,
+                                                                    video.id, /* ID within the playlist */
+                                                                    video.contentDetails.videoId /* ID within youtube */
+                                                                )}>
+                                                                <i className="fas fa-angle-double-left"></i> copy
+                                                            </button>
+                                                        </div>
+                                                        : <div>
+                                                            <button title="remove from this playlist" onClick={
+                                                                () => this.remove(listIndex,
+                                                                    video.id, /* ID within the playlist */
+                                                                    video.contentDetails.videoId /* ID within youtube */
+                                                                )}>
+                                                                <i className="fas fa-trash-alt"></i>
+                                                            </button>
+                                                        </div>
+                                                    }
+                                                    <div className="video-title">{video.snippet.title}</div>
+                                                    {listIndex % 2
+                                                        ? <div>
+                                                            <button title="remove from this playlist" onClick={
+                                                                () => this.remove(listIndex,
+                                                                    video.id, /* ID within the playlist */
+                                                                    video.contentDetails.videoId /* ID within youtube */
+                                                                )}>
+                                                                <i className="fas fa-trash-alt"></i>
+                                                            </button>
+                                                        </div>
+                                                        : <div>
+                                                            <button className="action-button" onClick={
+                                                                () => this.copy(listIndex, listIndex + 1,
+                                                                    video.id, /* ID within the playlist */
+                                                                    video.contentDetails.videoId /* ID within youtube */
+                                                                )}>copy <i className="fas fa-angle-double-right"></i>
+                                                            </button>
+                                                            <button className="action-button" onClick={
+                                                                () => this.move(listIndex, listIndex + 1,
+                                                                    video.id, /* ID within the playlist */
+                                                                    video.contentDetails.videoId /* ID within youtube */
+                                                                )}>move <i className="fas fa-angle-right"></i>
+                                                            </button>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            )}
                                         )
                                     }
                                     </div>

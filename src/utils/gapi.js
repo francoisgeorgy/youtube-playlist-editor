@@ -76,74 +76,51 @@ export function buildApiRequest(requestMethod, path, params, properties) {
 }
 
 export function buildPlaylistNameRequest(id) {
-    // console.log("buildPlaylistsRequests", pageToken);
-    // console.log('GET /youtube/v3/playlists');
-
-    /*
-        console.log("buildPlaylistNameRequest", id, {
-            'id': id,
-            // 'mine': 'true',
-            // 'maxResults': '50',
-            'part': 'snippet,contentDetails'    //,
-            // 'onBehalfOfContentOwner': '',
-            // 'onBehalfOfContentOwnerChannel': '',
-            // 'pageToken': pageToken
-        });
-*/
-
     return buildApiRequest('GET', '/youtube/v3/playlists', {
         id: id,
-        // 'mine': 'true',
-        // 'maxResults': '50',
-        part: 'snippet,contentDetails', //,
-        // 'onBehalfOfContentOwner': '',
-        // 'onBehalfOfContentOwnerChannel': '',
-        // 'pageToken': pageToken
+        part: 'snippet,contentDetails'
     });
 }
 
 export function buildPlaylistsRequest(pageToken) {
-    // console.log("buildPlaylistsRequests", pageToken);
-    // console.log('GET /youtube/v3/playlists');
     return buildApiRequest('GET', '/youtube/v3/playlists', {
         mine: 'true',
         maxResults: '50',
         part: 'snippet,contentDetails',
-        onBehalfOfContentOwner: '',
-        onBehalfOfContentOwnerChannel: '',
-        pageToken: pageToken,
+        // onBehalfOfContentOwner: '',
+        // onBehalfOfContentOwnerChannel: '',
+        pageToken: pageToken
     });
 }
 
 export function buildPlaylistItemsRequest(playlistId, pageToken) {
-    // console.log('GET /youtube/v3/playlistItems');
     return buildApiRequest('GET', '/youtube/v3/playlistItems', {
         maxResults: '50',
         part: 'snippet,contentDetails',
         playlistId: playlistId,
-        pageToken: pageToken,
+        pageToken: pageToken
     });
 }
 
 export function buildChannelsRequest() {
-    // console.log("buildChannelsRequests", pageToken);
     return buildApiRequest('GET', '/youtube/v3/channels', {
         mine: 'true',
-        part: 'contentDetails',
+        part: 'contentDetails'
     });
 }
 
+/*
 export function insertInPlaylist(videoId, moveToPlaylistId) {
     let insertRequest = buildApiRequest(
         'POST',
         '/youtube/v3/playlistItems',
         {
-            part: 'snippet', //,
+            part: 'snippet'
         },
         {
             'snippet.playlistId': moveToPlaylistId,
             'snippet.resourceId.kind': 'youtube#video',
-            'snippet.resourceId.videoId': videoId,
+            'snippet.resourceId.videoId': videoId
         }
     );
 
@@ -157,37 +134,14 @@ export function insertInPlaylist(videoId, moveToPlaylistId) {
             });
     });
 }
+*/
 
 export function executeRequest(request, callback, callbackError) {
-
-    // console.log("executeRequest begin");
 
     if (request === undefined || request === null) {
         console.log('executeRequest request is undefined or null');
         return;
     }
-    /*
-        request.execute(function(data) {
-            // console.log(data);
-            if (data) {
-                if (data.error) {
-                    console.warn(`${data.error.code} ${data.error.message}`);
-                    if (callbackError) {
-                        callbackError(data.error);
-                    }
-                } else {
-                    // console.log('executeRequest calling callback');
-                    if (callback) callback(data);
-                    // if (data.nextPageToken) {
-                    //     console.log('get next page', data.nextPageToken);
-                    //     defineRequest(data.nextPageToken);
-                    // }
-                }
-            } else {
-                if (callback) callback();
-            }
-        });
-*/
 
     // https://developers.google.com/api-client-library/javascript/reference/referencedocs#gapiclientbatch
     // https://developers.google.com/api-client-library/javascript/features/promises
@@ -204,84 +158,24 @@ export function executeRequest(request, callback, callbackError) {
             //     headers	    object | undefined	The map of HTTP response headers.
             //     status	    number | undefined	HTTP status.
             //     statusText	string | undefined	HTTP status text.
-
-            // console.log("executeRequest promise onFulfilled handler", response);
-
             if (callback) callback(response.result);
-
-            // if (data.error) {
-            //     console.warn(`${data.error.code} ${data.error.message}`);
-            //     if (callbackError) {
-            //         callbackError(data.error);
-            //     }
-            // } else {
-            //     // console.log('executeRequest calling callback');
-            //     if (callback) callback(data);
-            //     // if (data.nextPageToken) {
-            //     //     console.log('get next page', data.nextPageToken);
-            //     //     defineRequest(data.nextPageToken);
-            //     // }
-            // }
+        }
+    ).catch(
+        (reason) => {
+            if (callbackError) callbackError(reason);
         }
     );
-
-    // console.log("executeRequest end");
 }
-
-/**
- * Move the video to another playlist. The video will be removed from the current playlist.
- * @param videoItemId ID of the video-item in the current playlist
- * @param videoId ID of the video
- */
-/*
-export function moveIntoPlaylist(videoItemId, videoId, moveToPlaylistId) {
-
-    console.log('moveIntoPlaylist', videoItemId, videoId, moveToPlaylistId);
-
-    if (!moveToPlaylistId) return;
-
-    let insertRequest = buildApiRequest(
-        'POST',
-        '/youtube/v3/playlistItems',
-        {
-            part: 'snippet',
-        },
-        {
-            'snippet.playlistId': moveToPlaylistId,
-            'snippet.resourceId.kind': 'youtube#video',
-            'snippet.resourceId.videoId': videoId,
-        }
-    );
-
-    let deleteRequest = buildApiRequest('DELETE', '/youtube/v3/playlistItems', {
-        id: videoItemId,
-    });
-
-    return insertRequest.then(insertResponse => {
-        console.log(
-            'moveIntoPlaylist: calling deleteRequest insertResponse',
-            insertResponse
-        );
-        return deleteRequest.then(deleteResult => {
-            console.log(
-                'moveIntoPlaylist: deleteRequest.then, deleteResult',
-                deleteResult
-            );
-            return deleteResult;
-        });
-    });
-
-}
-*/
 
 export function copyMultipleIntoPlaylist(
-    videoItemIds,
+    playlistItemIds,
     videoIds,
     moveToPlaylistId,
+    progressCallback,
     successCallback,
     failureCallback) {
 
-    console.log('copyMultipleIntoPlaylist', videoItemIds, videoIds, moveToPlaylistId);
+    console.log('copyMultipleIntoPlaylist', playlistItemIds, videoIds, moveToPlaylistId);
 
     if (!moveToPlaylistId) return;
 
@@ -306,79 +200,45 @@ export function copyMultipleIntoPlaylist(
     // Start off with a promise that always resolves
     let sequence = Promise.resolve();
 
-/*
     for (let i = 0; i < insertRequests.length; i++) {
-        sequence = sequence.then(() => insertRequests[i]);
+        sequence = sequence
+            .then(() => insertRequests[i])
+            .then(() => {
+                if (progressCallback) {
+                    progressCallback({videoId: `${videoIds[i]}`, playlistItemId: `${playlistItemIds[i]}`});
+                }
+            });
     }
-*/
 
-/*
-    sequence = sequence
+    sequence
         .then(() => {
-            console.log("copyMultipleIntoPlaylist: call insertSuccessCallback");
-            insertSuccessCallback();
+            console.log("copyMultipleIntoPlaylist: success");
+            if (successCallback) {
+                successCallback();
+            }
         })
         .catch(function(reason) {
-            console.log("copy failure", reason);
+            console.log("copyMultipleIntoPlaylist: failure", reason);
             if (failureCallback) {
                 failureCallback({
-                    error: reason.result.error,
-                    videoId: `${videoIds[i]}`,
-                    videoItemId: `${videoItemIds[i]}`,
+                    error: reason.result.error //,
+                    // videoId: `${videoIds[i]}`,
+                    // playlistItemId: `${playlistItemIds[i]}`,
                 })
             }
         });
-*/
-
-
-        for (let i = 0; i < insertRequests.length; i++) {
-            sequence = sequence
-                .then(() => insertRequests[i]);
-                // .then(() => {
-                //     console.log("copyMultipleIntoPlaylist: call insertSuccessCallback");
-                //     insertSuccessCallback();
-                // })
-                // .catch(function(reason) {
-                //     console.log("copy failure", reason);
-                //     if (failureCallback) {
-                //         failureCallback({
-                //             error: reason.result.error,
-                //             videoId: `${videoIds[i]}`,
-                //             videoItemId: `${videoItemIds[i]}`,
-                //         })
-                //     }
-                // });
-        }
-
-        sequence = sequence
-            .then(() => {
-                console.log("copyMultipleIntoPlaylist: success");
-                if (successCallback) {
-                    successCallback();
-                }
-            })
-            .catch(function(reason) {
-                console.log("copyMultipleIntoPlaylist: failure", reason);
-                if (failureCallback) {
-                    failureCallback({
-                        error: reason.result.error //,
-                        // videoId: `${videoIds[i]}`,
-                        // videoItemId: `${videoItemIds[i]}`,
-                    })
-                }
-            });
 
 }
 
 export function moveMultipleIntoPlaylist(
-    videoItemIds,
+    playlistItemIds,
     videoIds,
     moveToPlaylistId,
-    insertSuccessCallback,
-    deleteSuccessCallback,
+    progressCallback,
+    successCallback,
     failureCallback) {
 
-    console.log('moveMultipleIntoPlaylist', videoItemIds, videoIds, moveToPlaylistId);
+    // console.log('moveMultipleIntoPlaylist', playlistItemIds, videoIds, moveToPlaylistId);
 
     if (!moveToPlaylistId) return;
 
@@ -401,10 +261,10 @@ export function moveMultipleIntoPlaylist(
     }
 
     let deleteRequests = [];
-    for (let i = 0; i < videoItemIds.length; i++) {
+    for (let i = 0; i < playlistItemIds.length; i++) {
         deleteRequests.push(
             buildApiRequest('DELETE', '/youtube/v3/playlistItems', {
-                id: videoItemIds[i],
+                id: playlistItemIds[i],
             })
         );
     }
@@ -415,90 +275,52 @@ export function moveMultipleIntoPlaylist(
     for (let i = 0; i < insertRequests.length; i++) {
         sequence = sequence
             .then(() => insertRequests[i])
-            .then(t => {
-                console.log("moveMultipleIntoPlaylist: call insertSuccessCallback");
-                insertSuccessCallback(/*{
-                    data: t,
-                    videoId: `${videoIds[i]}`,
-                    videoItemId: `${videoItemIds[i]}`,
-                }*/);
-            })
             .then(() => deleteRequests[i])
-            .then(r => {
-                deleteSuccessCallback(/*{
-                    data: r,
-                    videoId: `${videoIds[i]}`,
-                    videoItemId: `${videoItemIds[i]}`,
-                }*/);
-            })
-            .catch(function(reason) {
-                console.log("move failure", reason);
-                if (failureCallback) {
-                    failureCallback({
-                        error: reason.result.error,
-                        videoId: `${videoIds[i]}`,
-                        videoItemId: `${videoItemIds[i]}`,
-                    })
+            .then(() => {
+                if (progressCallback) {
+                    progressCallback({videoId: `${videoIds[i]}`, playlistItemId: `${playlistItemIds[i]}`});
                 }
             });
     }
 
-    // sequence =
-
-/*
-    for (let i = 0; i < insertRequests.length; i++) {
-        sequence = sequence
-            .then(() => insertRequests[i])
-            .then(t => {
-                console.log("moveMultipleIntoPlaylist: call insertSuccessCallback");
-                insertSuccessCallback(/!*{
-                    data: t,
-                    videoId: `${videoIds[i]}`,
-                    videoItemId: `${videoItemIds[i]}`,
-                }*!/);
-            })
-            .then(() => deleteRequests[i])
-            .then(r => {
-                deleteSuccessCallback(/!*{
-                    data: r,
-                    videoId: `${videoIds[i]}`,
-                    videoItemId: `${videoItemIds[i]}`,
-                }*!/);
-            })
-            .catch(function(reason) {
-                console.log("move failure", reason);
-                if (failureCallback) {
-                    failureCallback({
-                        error: reason.result.error,
-                        videoId: `${videoIds[i]}`,
-                        videoItemId: `${videoItemIds[i]}`,
-                    })
-                }
-            });
-    }
-*/
+    sequence
+        .then(t => {
+            console.log("moveMultipleIntoPlaylist: call insertSuccessCallback");
+            successCallback();
+        })
+        .catch(function(reason) {
+            console.log("move failure", reason);
+            if (failureCallback) {
+                failureCallback({
+                    error: reason.result.error //,
+                    // videoId: `${videoIds[i]}`,
+                    // playlistItemId: `${playlistItemIds[i]}`,
+                })
+            }
+        });
 
 }
 
 export function removeMultipleFromPlaylist(
-    videoItemIds,
+    playlistItemIds,
     videoIds,
     playlistId,
+    progressCallback,
     successCallback,
     failureCallback) {
 
-    console.log('removeMultipleFromPlaylist', videoItemIds, videoIds, playlistId);
+    console.log('removeMultipleFromPlaylist', playlistItemIds, videoIds, playlistId);
 
     if (!playlistId) return;
 
     let deleteRequests = [];
-    for (let i = 0; i < videoItemIds.length; i++) {
+    for (let i = 0; i < playlistItemIds.length; i++) {
         deleteRequests.push(
             buildApiRequest(
                 'DELETE',
                 '/youtube/v3/playlistItems',
                 {
-                    id: videoItemIds[i],
+                    id: playlistItemIds[i],
                 }
             )
         );
@@ -508,23 +330,26 @@ export function removeMultipleFromPlaylist(
     for (let i = 0; i < deleteRequests.length; i++) {
         sequence = sequence
             .then(() => deleteRequests[i])
-            .then(r => {
-                successCallback(/*{
-                    data: r,
-                    videoId: `${videoIds[i]}`,
-                    videoItemId: `${videoItemIds[i]}`,
-                }*/);
-            })
-            .catch(function(reason) {
-                console.log("remove failure", reason);
-                if (failureCallback) {
-                    failureCallback({
-                        error: reason.result.error,
-                        videoId: `${videoIds[i]}`,
-                        videoItemId: `${videoItemIds[i]}`,
-                    })
+            .then(() => {
+                if (progressCallback) {
+                    progressCallback({videoId: `${videoIds[i]}`, playlistItemId: `${playlistItemIds[i]}`});
                 }
             });
     }
+
+    sequence
+        .then(r => {
+            successCallback();
+        })
+        .catch(function(reason) {
+            console.log("remove failure", reason);
+            if (failureCallback) {
+                failureCallback({
+                    error: reason.result.error //,
+                    // videoId: `${videoIds[i]}`,
+                    // playlistItemId: `${playlistItemIds[i]}`,
+                })
+            }
+        });
 
 }

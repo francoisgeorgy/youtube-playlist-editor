@@ -86,6 +86,10 @@
     background-color: #ffffff;
 }
 
+.marked {
+    background-color: #fffb72;
+}
+
 .video-title {
     flex-grow: 2;
     margin-left: 1em;
