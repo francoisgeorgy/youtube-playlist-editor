@@ -70,21 +70,14 @@
 .action-button.disabled {
     background-color: #eeeeee;
     border: 1px solid #eeeeee;
-    border-radius: 3px;
-    padding: 0 2px 1px 2px;
-    text-decoration: none;
     color: #aaa;
-    margin-left: 10px;
 }
 
 .action-button:hover {
     background-color: #ccccff;
     border: 1px solid #ccccff;
-    border-radius: 3px;
-    padding: 0 2px 1px 2px;
     text-decoration: none;
     color: blue;
-    margin-left: 10px;
 }
 
 .text-button {

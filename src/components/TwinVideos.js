@@ -220,6 +220,10 @@ class TwinVideos extends Component {
         executeRequest(buildPlaylistsRequest(), this.storePlaylists);
     };
 
+    refreshPlaylists = () => {
+        this.retrievePlaylists();
+    };
+
     refreshPlaylist = (listIndex) => {
         console.log(`refreshPlaylist(${listIndex})`);
         this.setState(
@@ -512,8 +516,8 @@ class TwinVideos extends Component {
                                 <div className="playlist-selector">
                                     <select onChange={(event) => this.setPlaylist(event, listIndex)}>
                                         <option defaultValue={list.playlistId}>select playlist...</option>
-                                        {playlists.map((p, i) => <option key={i} value={p.id}>{p.snippet.title} ({p.contentDetails.itemCount})</option>)}
-                                    </select>
+                                        {playlists.map((p, i) => <option key={i} value={p.id}>{p.snippet.title}</option>)}
+                                    </select> <button onClick={this.refreshPlaylists}>refresh</button>
                                 </div>
                                 }
                                 {list.errorMessage &&
@@ -597,7 +601,7 @@ class TwinVideos extends Component {
                                                             </button>
                                                         </div>
                                                         : <div>
-                                                            <button title="remove from this playlist" onClick={
+                                                            <button className="action-button" title="remove from this playlist" onClick={
                                                                 () => this.remove(listIndex,
                                                                     video.id, /* ID within the playlist */
                                                                     video.contentDetails.videoId /* ID within youtube */
@@ -609,7 +613,7 @@ class TwinVideos extends Component {
                                                     <div className="video-title">{video.snippet.title}</div>
                                                     {listIndex % 2
                                                         ? <div>
-                                                            <button title="remove from this playlist" onClick={
+                                                            <button className="action-button" title="remove from this playlist" onClick={
                                                                 () => this.remove(listIndex,
                                                                     video.id, /* ID within the playlist */
                                                                     video.contentDetails.videoId /* ID within youtube */
