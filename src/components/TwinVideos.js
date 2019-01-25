@@ -476,12 +476,14 @@ class TwinVideos extends Component {
                                     <div className="error">{list.errorMessage}<div className="dismiss"><button onClick={() => this.dismissErrorMessage(listIndex)}>dismiss</button></div></div>
                                 </div>
                                 }
+                                {list.playlistId &&
+                                <div className="infos">
+                                    There are {list.videos.length} videos in this playlist.
+                                    {list.videos.length > 0 && <button onClick={() => this.refreshPlaylist(listIndex)}>refresh the list of videos</button>}
+                                </div>
+                                }
                                 {list.videos && list.videos.length > 0 &&
                                 <Fragment>
-                                    <div className="infos">
-                                        There are {list.videos.length} videos in this playlist.
-                                        <button onClick={() => this.refreshPlaylist(listIndex)}>refresh the list of videos</button>
-                                    </div>
                                     {/*<button onClick={() => this.refresh(listIndex)}>refresh</button>*/}
                                     <div className="filtering">
                                         {listIndex === 0 &&
