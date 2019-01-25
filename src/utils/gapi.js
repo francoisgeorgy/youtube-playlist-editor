@@ -85,10 +85,17 @@ export function buildPlaylistNameRequest(id) {
 export function buildPlaylistsRequest(pageToken) {
     return buildApiRequest('GET', '/youtube/v3/playlists', {
         mine: 'true',
-        maxResults: '50',
         part: 'snippet,contentDetails',
-        // onBehalfOfContentOwner: '',
-        // onBehalfOfContentOwnerChannel: '',
+        maxResults: '50',
+        pageToken: pageToken
+    });
+}
+
+export function buildChannelPlaylistsRequest(channelId, pageToken) {
+    return buildApiRequest('GET', '/youtube/v3/playlists', {
+        channelId: channelId,
+        part: 'snippet,contentDetails',
+        maxResults: '50',
         pageToken: pageToken
     });
 }
@@ -108,6 +115,18 @@ export function buildChannelsRequest() {
         part: 'contentDetails'
     });
 }
+
+
+
+export function buildSubscriptionsRequest(pageToken) {
+    return buildApiRequest('GET', '/youtube/v3/subscriptions', {
+        mine: 'true',
+        part: 'snippet,contentDetails',
+        maxResults: 50,
+        pageToken: pageToken
+    });
+}
+
 
 /*
 export function insertInPlaylist(videoId, moveToPlaylistId) {

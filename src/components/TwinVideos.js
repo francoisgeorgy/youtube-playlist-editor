@@ -8,6 +8,12 @@ import {
 } from '../utils/gapi';
 import './Videos.css';
 import {produce} from "immer";
+import {
+    contentDetailsPublishedAtSort, contentDetailsPublishedAtSortReverse,
+    snippetPositionSort, snippetPositionSortReverse,
+    snippetPublishedAtSort, snippetPublishedAtSortReverse,
+    snippetTitleSort, snippetTitleSortReverse
+} from "../utils/sorting";
 
 const SORT_BY_SNIPPET_TITLE = "snippetTitle";
 const SORT_BY_SNIPPET_PUBLISHED_AT = "snippetPublishedAt";
@@ -15,61 +21,6 @@ const SORT_BY_SNIPPET_POSITION = "snippetPosition";
 const SORT_BY_VIDEO_PUBLISHED_AT = "videoPublishedAt";
 const SORT_ASCENDING = true;    // false means sort descending
 
-function snippetTitleSort(a, b) {
-    return a.snippet.title.toLowerCase() > b.snippet.title.toLowerCase() ? 1 :
-           b.snippet.title.toLowerCase() > a.snippet.title.toLowerCase() ? -1 :
-           0;
-}
-
-function snippetPublishedAtSort(a, b) {
-    let d1 = Date.parse(a.snippet.publishedAt);
-    let d2 = Date.parse(b.snippet.publishedAt);
-    return d1 > d2 ? 1 :
-           d2 > d1 ? -1 :
-           0;
-}
-
-function snippetPositionSort(a, b) {
-    return a.snippet.position > b.snippet.position ? 1 :
-           b.snippet.position > a.snippet.position ? -1 :
-           0;
-}
-
-function contentDetailsPublishedAtSort(a, b) {
-    let d1 = Date.parse(a.contentDetails.publishedAt);
-    let d2 = Date.parse(b.contentDetails.publishedAt);
-    return d1 > d2 ? 1 :
-           d2 > d1 ? -1 :
-           0;
-}
-
-function snippetTitleSortReverse(b, a) {
-    return a.snippet.title.toLowerCase() > b.snippet.title.toLowerCase() ? 1 :
-        b.snippet.title.toLowerCase() > a.snippet.title.toLowerCase() ? -1 :
-            0;
-}
-
-function snippetPublishedAtSortReverse(b, a) {
-    let d1 = Date.parse(a.snippet.publishedAt);
-    let d2 = Date.parse(b.snippet.publishedAt);
-    return d1 > d2 ? 1 :
-        d2 > d1 ? -1 :
-            0;
-}
-
-function snippetPositionSortReverse(b, a) {
-    return a.snippet.position > b.snippet.position ? 1 :
-        b.snippet.position > a.snippet.position ? -1 :
-            0;
-}
-
-function contentDetailsPublishedAtSortReverse(b, a) {
-    let d1 = Date.parse(a.contentDetails.publishedAt);
-    let d2 = Date.parse(b.contentDetails.publishedAt);
-    return d1 > d2 ? 1 :
-        d2 > d1 ? -1 :
-            0;
-}
 
 class TwinVideos extends Component {
 
@@ -180,11 +131,9 @@ class TwinVideos extends Component {
 
     storeVideos = (listIndex, data, currentToken) => {
 
-        console.log('TwinVideos.storeVideos', currentToken);
+        // console.log('TwinVideos.storeVideos', currentToken);
 
         if (!data) return;
-
-        // console.log("TwinVideos.storeVideos", data);
 
         let list = data.items;
         list.sort(snippetTitleSort);
@@ -518,6 +467,8 @@ class TwinVideos extends Component {
                                         <option defaultValue={list.playlistId}>select playlist...</option>
                                         {playlists.map((p, i) => <option key={i} value={p.id}>{p.snippet.title}</option>)}
                                     </select> <button onClick={this.refreshPlaylists}>refresh</button>
+                                    {' '}
+                                    {list.playlistId && <a href={`https://www.youtube.com/playlist?list=${list.playlistId}`} target="_blank" rel="noopener noreferrer">open in YouTube</a>}
                                 </div>
                                 }
                                 {list.errorMessage &&
@@ -610,7 +561,9 @@ class TwinVideos extends Component {
                                                             </button>
                                                         </div>
                                                     }
-                                                    <div className="video-title">{video.snippet.title}</div>
+                                                    <div className="video-title">
+                                                        <a href={`https://www.youtube.com/watch?v=${video.contentDetails.videoId}`} target="_blank" rel="noopener noreferrer">{video.snippet.title}</a>
+                                                    </div>
                                                     {listIndex % 2
                                                         ? <div>
                                                             <button className="action-button" title="remove from this playlist" onClick={

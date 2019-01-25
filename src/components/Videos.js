@@ -560,28 +560,11 @@ class Videos extends Component {
                             visibleVideos.map((video, index) => {
                                 return (
                                     <div key={index}>
-                                        {video.snippet.title} -{' '}
-                                        {video.contentDetails.videoId} -{' '}
-                                        {video.id}
-                                        <button
-                                            onClick={() =>
-                                                this.remove(video.id)
-                                            }
-                                        >
-                                            remove
-                                        </button>
+                                        <a href={`https://www.youtube.com/watch?v=${video.contentDetails.videoId}`} target="_blank" rel="noopener noreferrer">{video.snippet.title}</a>
+                                        {' '}
+                                        <button onClick={() => this.remove(video.id)}>remove</button>
                                         {moveToPlaylistId && (
-                                            <button
-                                                onClick={() =>
-                                                    this.movep(
-                                                        video.id,
-                                                        video.contentDetails.videoId,
-                                                        moveToPlaylistId
-                                                    )
-                                                }
-                                            >
-                                                move
-                                            </button>
+                                            <button onClick={() => this.movep(video.id, video.contentDetails.videoId, moveToPlaylistId)}>move</button>
                                         )}
                                     </div>
                                 );

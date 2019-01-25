@@ -1,0 +1,14 @@
+.subscriptions-list {
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-gap: 10px 10px;
+}
+
+.subscriptions-list a {
+    text-decoration: none;
+    margin-right: 10px;
+}
+
+.channel-playlists {
+    font-size: 0.85em;
+}
