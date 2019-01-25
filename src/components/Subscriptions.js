@@ -16,7 +16,7 @@ class Subscriptions extends Component {
 
     constructor(props) {
         super(props);
-        console.log('Subscriptions.constructor', props);
+        // console.log('Subscriptions.constructor', props);
         this.state = {
             isAuthorized: false,
             subscriptions: null,
@@ -27,7 +27,7 @@ class Subscriptions extends Component {
     }
 
     static getDerivedStateFromProps(props, state) {
-        console.log('Subscriptions.getDerivedStateFromProps', props);
+        // console.log('Subscriptions.getDerivedStateFromProps', props);
         if (props.isAuthorized !== state.isAuthorized) {
             return {
                 isAuthorized: props.isAuthorized,
@@ -39,7 +39,7 @@ class Subscriptions extends Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        console.log('Subscriptions.componentDidUpdate');
+        // console.log('Subscriptions.componentDidUpdate');
         // At this point, we're in the "commit" phase, so it's safe to load the new data.
         if (this.state.isAuthorized && this.state.subscriptions === null) {
             // !!! only retrieve data if state.subscriptions is empty; otherwise this will generate an endless loop.
@@ -82,7 +82,7 @@ class Subscriptions extends Component {
 
     store = (data, currentToken) => {
 
-        console.log('Subscriptions.store', data);
+        // console.log('Subscriptions.store', data);
         if (!data) return;
 
         let list = data.items;
@@ -99,7 +99,7 @@ class Subscriptions extends Component {
         );
 
         if (data.nextPageToken) {
-            console.log('TwinVideos.storeVideos: get next page with token ' + data.nextPageToken);
+            // console.log('TwinVideos.storeVideos: get next page with token ' + data.nextPageToken);
             this.retrieve(data.nextPageToken);
         }
 
@@ -115,7 +115,7 @@ class Subscriptions extends Component {
     };
 
     retrieve = nextPageToken => {
-        console.log('Subscriptions.retrieve', nextPageToken);
+        // console.log('Subscriptions.retrieve', nextPageToken);
         executeRequest(
             buildSubscriptionsRequest(nextPageToken),
             data => this.store(data, nextPageToken)
@@ -123,7 +123,7 @@ class Subscriptions extends Component {
     };
 
     storeChannelPlaylist = (channelId, data) => {
-        console.log("storeChannelPlaylist", data);
+        // console.log("storeChannelPlaylist", data);
         const list = data.items;
         list.sort(snippetTitleSort);
         this.setState(
@@ -134,7 +134,7 @@ class Subscriptions extends Component {
     };
 
     retrieveChannelPlaylists = (channelId) => {
-        console.log(`retrieveChannelPlaylists(${channelId})`);
+        // console.log(`retrieveChannelPlaylists(${channelId})`);
         executeRequest(
             buildChannelPlaylistsRequest(channelId),
             data => this.storeChannelPlaylist(channelId, data)
@@ -142,7 +142,7 @@ class Subscriptions extends Component {
     };
 
     updateFilter = event => {
-        console.log('Subscriptions.updateFilter');
+        // console.log('Subscriptions.updateFilter');
         if (event.keyCode === 27) {
             this.setState({ filter: '' });
         } else {
@@ -159,7 +159,7 @@ class Subscriptions extends Component {
     };
 
     componentDidMount() {
-        console.log('Subscriptions.componentDidMount');
+        // console.log('Subscriptions.componentDidMount');
         this.retrieve();
     }
 
@@ -205,7 +205,7 @@ class Subscriptions extends Component {
     render() {
         const { isAuthorized, subscriptions, subscriptionsPlaylists, filter } = this.state;
 
-        console.log('Subscriptions render');
+        // console.log('Subscriptions render');
 
         const filt = filter.toLowerCase();
 

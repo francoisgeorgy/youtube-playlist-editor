@@ -42,17 +42,12 @@ class Videos extends Component {
     }
 
     componentDidMount() {
-        console.log('Videos.componentDidMount');
+        // console.log('Videos.componentDidMount');
         this.refresh();
     }
 
     componentDidUpdate(prevProps, prevState) {
-        console.log(
-            `Videos.componentDidUpdate, playlistId=${
-                this.state.playlistId
-            }, prev=${prevState.playlistId}`,
-            this.state
-        );
+        // console.log(`Videos.componentDidUpdate, playlistId=${this.state.playlistId}, prev=${prevState.playlistId}`, this.state);
 
         if (!this.state.isAuthorized) return;
 
@@ -97,7 +92,7 @@ class Videos extends Component {
     };
 
     storeVideos = (data, currentToken) => {
-        console.log('Videos.storeVideos', currentToken);
+        // console.log('Videos.storeVideos', currentToken);
 
         if (!data) return;
 
@@ -113,27 +108,17 @@ class Videos extends Component {
         });
 
         if (currentToken === undefined || !currentToken) {
-            console.log('Videos.storeVideos: set new videos list');
             this.setState({ videos: list });
         } else {
-            console.log('Videos.storeVideos: append videos to current list');
-            this.setState(prevState => ({
-                videos: [...prevState.videos, ...list],
-                // videos: prevState.videos.concat(list)
-            }));
+            this.setState(prevState => ({ videos: [...prevState.videos, ...list] }));
         }
 
         if (data.nextPageToken) {
-            console.log(
-                'Videos.storeVideos: get next page with token ' +
-                    data.nextPageToken
-            );
             this.retrieveVideos(data.nextPageToken);
         }
     };
 
     updatePlaylistName = playlistName => {
-        // console.log(playlistName);
         this.setState({ playlistName });
     };
 
@@ -152,22 +137,15 @@ class Videos extends Component {
 
         req.then(
             function(response) {
-                // console.log("buildPlaylistNameRequest", response);
                 try {
                     this.updatePlaylistName(
                         response.result.items[0].snippet.title
                     );
                 } catch (e) {
                     if (e instanceof TypeError) {
-                        console.log(
-                            'buildPlaylistNameRequest incomplete response',
-                            e
-                        );
+                        console.log('buildPlaylistNameRequest incomplete response', e);
                     } else {
-                        console.error(
-                            'buildPlaylistNameRequest unexpected error',
-                            e
-                        );
+                        console.error('buildPlaylistNameRequest unexpected error', e);
                     }
                 }
             },
@@ -180,12 +158,8 @@ class Videos extends Component {
     };
 
     retrieveVideos = nextPageToken => {
-        console.log(
-            `Videos.retrieveVideos, playlistId=${
-                this.state.playlistId
-            }, pageToken=${nextPageToken}`
-        );
-        console.log(`Videos.retrieveVideos set videosLoading=true`);
+        // console.log(`Videos.retrieveVideos, playlistId=${this.state.playlistId}, pageToken=${nextPageToken}`);
+        // console.log(`Videos.retrieveVideos set videosLoading=true`);
         this.setState({ videosLoading: true });
         executeRequest(
             buildPlaylistItemsRequest(this.state.playlistId, nextPageToken),
@@ -218,7 +192,7 @@ class Videos extends Component {
      * @param videoItemId ID of the video-item in the current playlist
      */
     remove = videoItemId => {
-        console.log('Videos.remove', videoItemId);
+        // console.log('Videos.remove', videoItemId);
         if (!videoItemId) return;
         let request = buildApiRequest('DELETE', '/youtube/v3/playlistItems', {
             id: videoItemId,
@@ -229,11 +203,6 @@ class Videos extends Component {
             this.removeError
         );
     };
-
-    // insertSuccess = (videoItemId) => {
-    //     console.log("");
-    //     this.remove(videoItemId);
-    // };
 
     createError = error => {
         console.log('Videos.insertError', error);
@@ -249,7 +218,7 @@ class Videos extends Component {
      * @param videoId ID of the video
      */
     move = (videoItemId, videoId, moveToPlaylistId) => {
-        console.log('Videos.move', videoItemId, videoId, moveToPlaylistId);
+        // console.log('Videos.move', videoItemId, videoId, moveToPlaylistId);
 
         if (!moveToPlaylistId) return;
 
@@ -324,17 +293,17 @@ class Videos extends Component {
 */
         let r = null;
 
-        console.log('calling insertRequest');
+        // console.log('calling insertRequest');
         insertRequest
             .then(function() {
-                console.log('calling deleteRequest');
+                // console.log('calling deleteRequest');
                 return deleteRequest.then(function() {
-                    console.log('deleteRequest.then');
+                    // console.log('deleteRequest.then');
                     r = 'OK';
                 });
             })
             .catch(function(reason) {
-                console.log('move failed', JSON.stringify(reason));
+                // console.log('move failed', JSON.stringify(reason));
                 r = reason.result
                     ? reason.result.error.message
                     : 'unknow reason';
@@ -357,7 +326,7 @@ class Videos extends Component {
     };
 
     movep = (videoItemId, videoId, moveToPlaylistId) => {
-        console.log('movep', videoItemId, videoId, moveToPlaylistId);
+        // console.log('movep', videoItemId, videoId, moveToPlaylistId);
         // insertInPlaylist(videoId, moveToPlaylistId)
         //     .then(function(response) {
         //         console.log("movep.insertInPlaylist resovled", response);

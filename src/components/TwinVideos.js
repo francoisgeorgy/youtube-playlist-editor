@@ -63,7 +63,7 @@ class TwinVideos extends Component {
     }
 
     componentDidMount() {
-        console.log('TwinVideos.componentDidMount');
+        // console.log('TwinVideos.componentDidMount');
         this.refresh();
     }
 
@@ -89,7 +89,7 @@ class TwinVideos extends Component {
 
         if (this.state.playlists === null) {
             // !!! only retrieve data if state.playlists is empty; otherwise this will generate an endless loop.
-            console.log('TwinVideos.componentDidUpdate: call retrievePlaylists');
+            // console.log('TwinVideos.componentDidUpdate: call retrievePlaylists');
             this.retrievePlaylists();
         }
     }
@@ -120,7 +120,7 @@ class TwinVideos extends Component {
 
     storePlaylists = data => {
 
-        console.log("TwinVideos.storePlayLists", data.items);
+        // console.log("TwinVideos.storePlayLists", data.items);
 
         if (!data) return;
 
@@ -149,13 +149,13 @@ class TwinVideos extends Component {
         );
 
         if (data.nextPageToken) {
-            console.log('TwinVideos.storeVideos: get next page with token ' + data.nextPageToken);
+            // console.log('TwinVideos.storeVideos: get next page with token ' + data.nextPageToken);
             this.retrieveVideos(listIndex, data.nextPageToken);
         }
     };
 
     retrieveVideos = (listIndex, nextPageToken) => {
-        console.log(`TwinVideos.retrieveVideos, playlistId=${this.state.playlistId}, pageToken=${nextPageToken}`);
+        // console.log(`TwinVideos.retrieveVideos, playlistId=${this.state.playlistId}, pageToken=${nextPageToken}`);
         // console.log(`TwinVideos.retrieveVideos set videosLoading=true`);
         this.setState({ errorMessage: null, videosLoading: true });
         executeRequest(
@@ -174,7 +174,7 @@ class TwinVideos extends Component {
     };
 
     refreshPlaylist = (listIndex) => {
-        console.log(`refreshPlaylist(${listIndex})`);
+        // console.log(`refreshPlaylist(${listIndex})`);
         this.setState(
             produce(draft => {
                 draft.lists[listIndex].errorMessage = null;
@@ -185,7 +185,7 @@ class TwinVideos extends Component {
     };
 
     setPlaylist = (event, listIndex) => {
-        console.log("TwinVideos.setMoveToList", event.target.value, listIndex, this.state);
+        // console.log("TwinVideos.setMoveToList", event.target.value, listIndex, this.state);
         let id = event.target.value;
         this.setState(
             produce(draft => {
@@ -226,7 +226,7 @@ class TwinVideos extends Component {
 
     getVisibleIds = listIndex => {
 
-        console.log(`getVisibleIds(${listIndex})`, this.state);
+        // console.log(`getVisibleIds(${listIndex})`, this.state);
 
         let filter = this.state.lists[listIndex].filter.toLowerCase();
 
@@ -265,7 +265,7 @@ class TwinVideos extends Component {
     };
 
     progress = (listIndex, {videoId, playlistItemId}) => {
-        console.log("progress", videoId, playlistItemId);
+        // console.log("progress", videoId, playlistItemId);
         this.setState(
             produce(draft => {
                 let k = draft.lists[listIndex].marked.findIndex(id => id === playlistItemId);
@@ -284,7 +284,7 @@ class TwinVideos extends Component {
     };
 
     copy = (sourceListIndex, targetListIndex, playlistItemId, videoId) => {
-        console.log('copy', sourceListIndex, targetListIndex, playlistItemId, videoId);
+        // console.log('copy', sourceListIndex, targetListIndex, playlistItemId, videoId);
         this.mark(sourceListIndex, playlistItemId);
         copyMultipleIntoPlaylist(
             [playlistItemId],
@@ -316,7 +316,7 @@ class TwinVideos extends Component {
     };
 
     move = (sourceListIndex, targetListIndex, playlistItemId, videoId) => {
-        console.log('move', sourceListIndex, targetListIndex, playlistItemId, videoId);
+        // console.log('move', sourceListIndex, targetListIndex, playlistItemId, videoId);
         this.mark(sourceListIndex, playlistItemId);
         moveMultipleIntoPlaylist(
             [playlistItemId],
@@ -355,7 +355,7 @@ class TwinVideos extends Component {
     };
 
     remove = (listIndex, playlistItemId, videoId) => {
-        console.log('remove', listIndex, playlistItemId, videoId);
+        // console.log('remove', listIndex, playlistItemId, videoId);
         this.mark(listIndex, playlistItemId);
         removeMultipleFromPlaylist(
             [playlistItemId],
@@ -410,7 +410,7 @@ class TwinVideos extends Component {
     };
 
     refresh = (listIndex, clearFilter = false) => {
-        console.log('refresh');
+        // console.log('refresh');
         if (!this.state.isAuthorized) return;
         this.setState(
             produce(draft => {
