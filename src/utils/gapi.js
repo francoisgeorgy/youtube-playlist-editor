@@ -219,12 +219,19 @@ export function copyMultipleIntoPlaylist(
     // Start off with a promise that always resolves
     let sequence = Promise.resolve();
 
-    for (let i = 0; i < insertRequests.length; i++) {
+    let total = insertRequests.length;
+
+    for (let i = 0; i < total; i++) {
         sequence = sequence
+            .then(() => {
+                if (progressCallback) {
+                    progressCallback({index: i, total: total, operation: "copying", videoId: `${videoIds[i]}`, playlistItemId: `${playlistItemIds[i]}`});
+                }
+            })
             .then(() => insertRequests[i])
             .then(() => {
                 if (progressCallback) {
-                    progressCallback({videoId: `${videoIds[i]}`, playlistItemId: `${playlistItemIds[i]}`});
+                    progressCallback({index: i, total: total, operation: "copied", videoId: `${videoIds[i]}`, playlistItemId: `${playlistItemIds[i]}`});
                 }
             });
     }
@@ -291,13 +298,25 @@ export function moveMultipleIntoPlaylist(
     // Start off with a promise that always resolves
     let sequence = Promise.resolve();
 
-    for (let i = 0; i < insertRequests.length; i++) {
+    let total = insertRequests.length;
+
+    for (let i = 0; i < total; i++) {
         sequence = sequence
+            .then(() => {
+                if (progressCallback) {
+                    progressCallback({index: i+1, total: total, operation: "inserting", videoId: `${videoIds[i]}`, playlistItemId: `${playlistItemIds[i]}`});
+                }
+            })
             .then(() => insertRequests[i])
+            .then(() => {
+                if (progressCallback) {
+                    progressCallback({index: i+1, total: total, operation: "removing", videoId: `${videoIds[i]}`, playlistItemId: `${playlistItemIds[i]}`});
+                }
+            })
             .then(() => deleteRequests[i])
             .then(() => {
                 if (progressCallback) {
-                    progressCallback({videoId: `${videoIds[i]}`, playlistItemId: `${playlistItemIds[i]}`});
+                    progressCallback({index: i+1, total: total, operation: "removed", videoId: `${videoIds[i]}`, playlistItemId: `${playlistItemIds[i]}`});
                 }
             });
     }
@@ -345,13 +364,20 @@ export function removeMultipleFromPlaylist(
         );
     }
 
+    let total = deleteRequests.length;
+
     let sequence = Promise.resolve();
-    for (let i = 0; i < deleteRequests.length; i++) {
+    for (let i = 0; i < total; i++) {
         sequence = sequence
+            .then(() => {
+                if (progressCallback) {
+                    progressCallback({index: i, total: total, operation: "removing", videoId: `${videoIds[i]}`, playlistItemId: `${playlistItemIds[i]}`});
+                }
+            })
             .then(() => deleteRequests[i])
             .then(() => {
                 if (progressCallback) {
-                    progressCallback({videoId: `${videoIds[i]}`, playlistItemId: `${playlistItemIds[i]}`});
+                    progressCallback({index: i, total: total, operation: "removed", videoId: `${videoIds[i]}`, playlistItemId: `${playlistItemIds[i]}`});
                 }
             });
     }

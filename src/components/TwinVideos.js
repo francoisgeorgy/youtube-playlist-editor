@@ -38,6 +38,7 @@ class TwinVideos extends Component {
                 sortMethod: SORT_BY_SNIPPET_TITLE,
                 sortDirection: SORT_ASCENDING,
                 errorMessage: null,
+                progressMessage: null,
                 marked: []      // list of VideoId (ID within the playlist)
             },{
                 playlistId: null,
@@ -46,6 +47,7 @@ class TwinVideos extends Component {
                 sortMethod: SORT_BY_SNIPPET_TITLE,
                 sortDirection: SORT_ASCENDING,
                 errorMessage: null,
+                progressMessage: null,
                 marked: []      // list of VideoId (ID within the playlist)
             }]
         };
@@ -259,15 +261,17 @@ class TwinVideos extends Component {
     clearMarked = (listIndex) => {
         this.setState(
             produce(draft => {
+                draft.lists[listIndex].progressMessage = null;
                 draft.lists[listIndex].marked = [];
             })
         );
     };
 
-    progress = (listIndex, {videoId, playlistItemId}) => {
-        // console.log("progress", videoId, playlistItemId);
+    progress = (listIndex, {index, total, operation, videoId, playlistItemId}) => {
+        // console.log("progress", videoId, playlistItemId, `${index}/${total}: ${operation} ${videoId}`);
         this.setState(
             produce(draft => {
+                draft.lists[listIndex].progressMessage = `${index}/${total}: ${operation} ${videoId}`;
                 let k = draft.lists[listIndex].marked.findIndex(id => id === playlistItemId);
                 // console.log("progress k", k, videoId);
                 if (k >= 0) draft.lists[listIndex].marked.splice(k, 1);
@@ -482,6 +486,14 @@ class TwinVideos extends Component {
                                     {list.videos.length > 0 && <button onClick={() => this.refreshPlaylist(listIndex)}>refresh the list of videos</button>}
                                 </div>
                                 }
+
+                                {list.progressMessage &&
+                                <div className="progress">
+                                    {list.progressMessage}
+                                </div>
+                                }
+
+
                                 {list.videos && list.videos.length > 0 &&
                                 <Fragment>
                                     {/*<button onClick={() => this.refresh(listIndex)}>refresh</button>*/}
@@ -515,6 +527,11 @@ class TwinVideos extends Component {
                                         }
                                     </div>
                                     }
+                                    {/* list.progressMessage &&
+                                    <div className="progress">
+                                        {list.progressMessage}
+                                    </div>
+                                    */}
                                     <div className="sorting">
                                         <button onClick={() => this.setSortMethod(listIndex, SORT_BY_SNIPPET_TITLE)} className={sortMethod === SORT_BY_SNIPPET_TITLE ? "text-button active" : "text-button"}>
                                             title<i className={sortDirection ? "fas fa-sort-alpha-down" : "fas fa-sort-alpha-up"}></i>

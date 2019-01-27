@@ -9,6 +9,7 @@ import {
     moveMultipleIntoPlaylist,
 } from '../utils/gapi';
 import './Videos.css';
+import {snippetTitleSort} from "../utils/sorting";
 
 /**
  * Display the list of videos for a playlist.
@@ -81,13 +82,7 @@ class Videos extends Component {
         // console.log("Videos.storePlayLists", data.items);
         if (!data) return;
         let list = data.items;
-        list.sort(function(a, b) {
-            return a.snippet.title.toLowerCase() > b.snippet.title.toLowerCase()
-                ? 1
-                : b.snippet.title.toLowerCase() > a.snippet.title.toLowerCase()
-                ? -1
-                : 0;
-        });
+        list.sort(snippetTitleSort);
         this.setState({ playlists: list });
     };
 
@@ -99,13 +94,7 @@ class Videos extends Component {
         // console.log("Videos.storeVideos", data);
 
         let list = data.items;
-        list.sort(function(a, b) {
-            return a.snippet.title.toLowerCase() > b.snippet.title.toLowerCase()
-                ? 1
-                : b.snippet.title.toLowerCase() > a.snippet.title.toLowerCase()
-                ? -1
-                : 0;
-        });
+        list.sort(snippetTitleSort);
 
         if (currentToken === undefined || !currentToken) {
             this.setState({ videos: list });

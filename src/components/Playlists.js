@@ -6,6 +6,7 @@ import {
 } from '../utils/gapi';
 import { Link } from 'react-router-dom';
 import './Playlists.css';
+import {snippetTitleSort} from "../utils/sorting";
 
 /**
  * Display the list of playlists of the authorized user.
@@ -77,23 +78,31 @@ class Playlists extends Component {
         );
     };
 
-    store = data => {
+
+    store = (data, currentToken) => {
         console.log('Playlists.store');
+
         if (!data) return;
+
         let list = data.items;
-        list.sort(function(a, b) {
-            return a.snippet.title.toLowerCase() > b.snippet.title.toLowerCase()
-                ? 1
-                : b.snippet.title.toLowerCase() > a.snippet.title.toLowerCase()
-                ? -1
-                : 0;
-        });
-        this.setState({ playlists: list });
+        list.sort(snippetTitleSort);
+
+        if (currentToken === undefined || !currentToken) {
+            this.setState({ playlists: list });
+        } else {
+            this.setState(prevState => ({ playlists: [...prevState.playlists, ...list] }));
+        }
+
+        if (data.nextPageToken) {
+            this.retrieve(data.nextPageToken);
+        }
+
     };
 
     retrieve = nextPageToken => {
         console.log('Playlists.retrieve', nextPageToken);
-        executeRequest(buildPlaylistsRequest(nextPageToken), this.store);
+        executeRequest(buildPlaylistsRequest(nextPageToken),
+            data => this.store(data, nextPageToken));
     };
 
     updateFilter = event => {
@@ -166,6 +175,7 @@ class Playlists extends Component {
                     <div>
                         <h2>list of playlists</h2>
                         <button onClick={this.refresh}>refresh</button>
+                        <h3>{playlists.length} playlists</h3>
                         <div>
                             new playlist:{' '}
                             <input

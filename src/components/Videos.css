@@ -3,6 +3,11 @@
     padding: 5px;
 }
 
+.progress {
+    background-color: #aaaaaa;
+    padding: 5px;
+}
+
 .dismiss {
     float: right;
 }
