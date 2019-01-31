@@ -35,6 +35,17 @@
     grid-column-gap: 10px;
 }
 
+.videos-main {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-column-gap: 10px;
+}
+
+.column {
+
+}
+
 .videos {
     border: 1px solid #aaa;
     padding: 5px;
@@ -65,7 +76,6 @@
     font-weight: bold;
 }
 
-
 .batch-actions {
     display: flex;
     flex-direction: row;
@@ -81,7 +91,6 @@
 .row:hover {
     background-color: #fffb72;
 }
-
 
 .row-0 {
     /*background-color: #E5E5FB;*/

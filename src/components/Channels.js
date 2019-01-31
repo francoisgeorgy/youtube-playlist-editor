@@ -12,8 +12,7 @@ class Channels extends Component {
         console.log('Channels.constructor', props);
         this.state = {
             isAuthorized: false,
-            channels: null,
-            filter: '',
+            channels: null
         };
     }
 
@@ -51,14 +50,14 @@ class Channels extends Component {
         executeRequest(buildChannelsRequest(), this.store);
     };
 
-    updateFilter = event => {
-        console.log('Channels.updateFilter');
-        if (event.keyCode === 27) {
-            this.setState({ filter: '' });
-        } else {
-            this.setState({ filter: event.target.value });
-        }
-    };
+    // updateFilter = event => {
+    //     console.log('Channels.updateFilter');
+    //     if (event.keyCode === 27) {
+    //         this.setState({ filter: '' });
+    //     } else {
+    //         this.setState({ filter: event.target.value });
+    //     }
+    // };
 
     componentDidMount() {
         console.log('Channels.componentDidMount');
@@ -66,7 +65,7 @@ class Channels extends Component {
     }
 
     render() {
-        const { isAuthorized, channels, filter } = this.state;
+        const { isAuthorized, channels } = this.state;
 
         console.log('Channels render', channels);
 
@@ -77,9 +76,6 @@ class Channels extends Component {
                 return (
                     <div>
                         <h2>list of channels</h2>
-                        {/*<div className="filter">*/}
-                        {/*filter: <input type="text" onKeyUp={this.updateFilter} />*/}
-                        {/*</div>*/}
                         <div>
                             {Object.keys(channels).map((name, index) => {
                                 return (

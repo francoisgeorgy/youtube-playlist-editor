@@ -103,3 +103,42 @@ a {
 .text-button:focus {
     outline: none;
 }
+
+
+
+.playlists-videos {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-column-gap: 10px;
+}
+
+.column {
+    border: 1px solid #aaa;
+    padding: 5px;
+}
+
+.row:hover {
+    background-color: #fffb72;
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+.row.selected {
+    background-color: #ccc;
+}
+
+.row-option {
+    display: none;
+    margin-left: 20px;
+}
+
+.row:hover > .row-option {
+    display: block;
+}
+
+.row-main {
+    flex-grow: 2;
+}

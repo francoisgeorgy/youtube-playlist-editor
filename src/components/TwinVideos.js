@@ -121,11 +121,8 @@ class TwinVideos extends Component {
     };
 
     storePlaylists = data => {
-
         // console.log("TwinVideos.storePlayLists", data.items);
-
         if (!data) return;
-
         let list = data.items;
         list.sort(snippetTitleSort);
         this.setState({ playlists: list });
@@ -469,7 +466,7 @@ class TwinVideos extends Component {
                                 <div className="playlist-selector">
                                     <select onChange={(event) => this.setPlaylist(event, listIndex)}>
                                         <option defaultValue={list.playlistId}>select playlist...</option>
-                                        {playlists.map((p, i) => <option key={i} value={p.id}>{p.snippet.title}</option>)}
+                                        {playlists.map((p, i) => <option key={i} value={p.id}>{p.snippet.title} ({p.contentDetails.itemCount})</option>)}
                                     </select> <button onClick={this.refreshPlaylists}>refresh</button>
                                     {' '}
                                     {list.playlistId && <a href={`https://www.youtube.com/playlist?list=${list.playlistId}`} target="_blank" rel="noopener noreferrer">open in YouTube</a>}

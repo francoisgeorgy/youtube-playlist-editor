@@ -1,3 +1,4 @@
+
 export function createResource(properties) {
     // console.log("createResource");
     let resource = {};
@@ -73,6 +74,13 @@ export function buildApiRequest(requestMethod, path, params, properties) {
         });
     }
     return request;
+}
+
+export function buildVideosRequest(id) {
+    return buildApiRequest('GET', '/youtube/v3/videos', {
+        id: id,
+        part: 'snippet,contentDetails'
+    });
 }
 
 export function buildPlaylistNameRequest(id) {

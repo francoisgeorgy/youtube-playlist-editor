@@ -6,6 +6,7 @@ import { BrowserRouter as Router, Route, Link, Switch } from 'react-router-dom';
 import Channels from './components/Channels';
 import TwinVideos from "./components/TwinVideos";
 import Subscriptions from "./components/Subscriptions";
+import PlaylistsVideos from "./components/PlaylistsVideos";
 // import { library } from '@fortawesome/fontawesome-svg-core'
 // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 //
@@ -197,6 +198,11 @@ class App extends Component {
                             </Link>
                         )}
                         {isAuthorized && (
+                            <Link className="header-link" to="/playlists-videos">
+                                PlaylistsVideos
+                            </Link>
+                        )}
+                        {isAuthorized && (
                             <Link className="header-link" to="/playlists">
                                 Playlists
                             </Link>
@@ -244,6 +250,15 @@ class App extends Component {
                                 path="/subscriptions"
                                 render={props => (
                                     <Subscriptions
+                                        {...props}
+                                        isAuthorized={isAuthorized}
+                                    />
+                                )}
+                            />
+                            <Route
+                                path="/playlists-videos"
+                                render={props => (
+                                    <PlaylistsVideos
                                         {...props}
                                         isAuthorized={isAuthorized}
                                     />
