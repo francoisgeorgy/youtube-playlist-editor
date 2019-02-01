@@ -1,4 +1,10 @@
 
+export const SORT_BY_SNIPPET_TITLE = "snippetTitle";
+export const SORT_BY_SNIPPET_PUBLISHED_AT = "snippetPublishedAt";
+export const SORT_BY_SNIPPET_POSITION = "snippetPosition";
+export const SORT_BY_VIDEO_PUBLISHED_AT = "videoPublishedAt";
+export const SORT_ASCENDING = true;    // false means sort descending
+
 export function snippetTitleSort(a, b) {
     return a.snippet.title.toLowerCase() > b.snippet.title.toLowerCase() ? 1 :
         b.snippet.title.toLowerCase() > a.snippet.title.toLowerCase() ? -1 :

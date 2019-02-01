@@ -9,17 +9,25 @@ import {
 import './Videos.css';
 import {produce} from "immer";
 import {
-    contentDetailsPublishedAtSort, contentDetailsPublishedAtSortReverse,
-    snippetPositionSort, snippetPositionSortReverse,
-    snippetPublishedAtSort, snippetPublishedAtSortReverse,
-    snippetTitleSort, snippetTitleSortReverse
+    contentDetailsPublishedAtSort,
+    contentDetailsPublishedAtSortReverse,
+    snippetPositionSort,
+    snippetPositionSortReverse,
+    snippetPublishedAtSort,
+    snippetPublishedAtSortReverse,
+    snippetTitleSort,
+    snippetTitleSortReverse,
+    SORT_ASCENDING, SORT_BY_SNIPPET_POSITION,
+    SORT_BY_SNIPPET_PUBLISHED_AT,
+    SORT_BY_SNIPPET_TITLE,
+    SORT_BY_VIDEO_PUBLISHED_AT
 } from "../utils/sorting";
 
-const SORT_BY_SNIPPET_TITLE = "snippetTitle";
-const SORT_BY_SNIPPET_PUBLISHED_AT = "snippetPublishedAt";
-const SORT_BY_SNIPPET_POSITION = "snippetPosition";
-const SORT_BY_VIDEO_PUBLISHED_AT = "videoPublishedAt";
-const SORT_ASCENDING = true;    // false means sort descending
+// const SORT_BY_SNIPPET_TITLE = "snippetTitle";
+// const SORT_BY_SNIPPET_PUBLISHED_AT = "snippetPublishedAt";
+// const SORT_BY_SNIPPET_POSITION = "snippetPosition";
+// const SORT_BY_VIDEO_PUBLISHED_AT = "videoPublishedAt";
+// const SORT_ASCENDING = true;    // false means sort descending
 
 
 class TwinVideos extends Component {
@@ -448,7 +456,7 @@ class TwinVideos extends Component {
         // console.log("render", lists);
 
         if (!isAuthorized) {
-            return <div />;
+            return null;
         } else {
             return (
                 <div className="lists">

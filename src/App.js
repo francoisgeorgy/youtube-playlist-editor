@@ -177,9 +177,10 @@ class App extends Component {
 
         return (
             <Router>
-                <div>
+                <div className="App">
                     <div className="header">
                         Youtube Playlist Editor
+{/*
                         <button onClick={this.grantAccess}>Grant access</button>
                         {isAuthorized ? (
                             <div className="header-info">
@@ -192,6 +193,7 @@ class App extends Component {
                                 </button>
                             </span>
                         )}
+*/}
                         {isAuthorized && (
                             <Link className="header-link" to="/channels">
                                 Channels
@@ -218,9 +220,9 @@ class App extends Component {
                             </Link>
                         )}
                     </div>
-                    <div className="content">
+                    {/*<div className="content">*/}
                         {!isAuthorized && (
-                            <div>
+                            <div className="authorization">
                                 <p>
                                     You need to authorize the application to
                                     access your Youtube playlists.
@@ -292,7 +294,7 @@ class App extends Component {
                                 )}
                             />
                         </Switch>
-                    </div>
+                    {/*</div>*/}
                 </div>
             </Router>
         );

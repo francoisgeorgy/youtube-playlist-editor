@@ -2,43 +2,39 @@ a {
     text-decoration: none;
 }
 
+.italic {
+    font-style: italic;
+}
+
+.strong {
+    font-weight: bold;
+}
+
+/*.App {*/
+    /*text-align: center;*/
+/*}*/
+
 .App {
-    text-align: center;
+    /*background-color: var(--page-background);*/
+    /*color: var(--text-normal);*/
+    margin: 0;
+    padding: 0;
+    /*padding-bottom: 8px;*/
+    display: grid;
+    grid-template-columns: 100%;
+    grid-template-rows:
+            40px                /* header */
+            auto;
+    width: 100vw;
+    height: 100vh;
 }
 
-.App-logo {
-    animation: App-logo-spin infinite 20s linear;
-    height: 80px;
-}
 
-.App-header {
-    background-color: #222;
-    height: 150px;
-    padding: 20px;
-    color: white;
-}
-
-.App-title {
-    font-size: 1.5em;
-}
-
-.App-intro {
-    font-size: large;
-}
-
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
-}
 
 .header {
-    margin: 0 0 10px 0;
+    /*margin: 0 0 10px 0;*/
     padding: 10px;
-    background-color: #eee;
+    background-color: #e7e7e7;
     border-bottom: 1px solid #aaa;
 }
 
@@ -56,9 +52,13 @@ a {
     margin-left: 2em;
 }
 
-.content {
-    padding: 0 10px;
+.authorization, .default-content {
+    padding-left: 10px;
 }
+
+/*.content {*/
+    /*padding: 0 10px;*/
+/*}*/
 
 
 .action-button {
@@ -106,15 +106,35 @@ a {
 
 
 
+/*.playlists-videos {*/
+    /*width: 100%;*/
+    /*display: grid;*/
+    /*grid-template-columns: 1fr 1fr;*/
+    /*grid-column-gap: 10px;*/
+/*}*/
+
 .playlists-videos {
     width: 100%;
+    margin: 0;
+    padding: 0;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-column-gap: 10px;
+    grid-template-rows: 80px calc(100vh - 40px - 1px - 80px - 1px); /* minus header rows minus borders */
 }
 
-.column {
-    border: 1px solid #aaa;
+.column-header {
+    background-color: #f7f7f7;
+    border-bottom: 1px solid #d7d7d7;
+    padding: 5px;
+    /*background-color: #ccccff;*/
+    /*height: calc(100vh - 40px); !* minus header row *!*/
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+.column-content {
+    overflow-y: scroll;
     padding: 5px;
 }
 
@@ -128,6 +148,10 @@ a {
 
 .row.selected {
     background-color: #ccc;
+}
+
+.row-main {
+    flex-grow: 2;
 }
 
 .row-option {
