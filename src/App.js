@@ -4,9 +4,9 @@ import Playlists from './components/Playlists';
 import Videos from './components/Videos';
 import { BrowserRouter as Router, Route, Link, Switch } from 'react-router-dom';
 import Channels from './components/Channels';
-import TwinVideos from "./components/TwinVideos";
 import Subscriptions from "./components/Subscriptions";
 import PlaylistsVideos from "./components/PlaylistsVideos";
+import VideosVideos from "./components/VideosVideos";
 // import { library } from '@fortawesome/fontawesome-svg-core'
 // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 //
@@ -35,7 +35,7 @@ class App extends Component {
      * Called on update of sign-in status
      */
     setSigninStatus = () => {
-        console.log('setSigninStatus', this.state.google_api);
+        // console.log('setSigninStatus', this.state.google_api);
         if (this.state.google_api) {
             // console.log("* instance.currentUser.get()");
             let user = this.state.google_api.currentUser.get();
@@ -58,9 +58,8 @@ class App extends Component {
     };
 
     initClient = () => {
-        console.log('initClient');
+        // console.log('initClient');
 
-        // console.log("* gapi.client.init");
         window.gapi.client
             .init({
                 clientId:
@@ -73,7 +72,7 @@ class App extends Component {
                 // 'access_type': 'offline'
             })
             .then(() => {
-                console.log('initClient: success');
+                // console.log('initClient: success');
 
                 // console.log("* gapi.auth2.getAuthInstance");
                 let inst = window.gapi.auth2.getAuthInstance(); // https://developers.google.com/api-client-library/javascript/reference/referencedocs#gapiauth2getauthinstance
@@ -93,40 +92,20 @@ class App extends Component {
 
     authorize = () => {
 
-        console.log('authorize');
+        // console.log('authorize');
 
         let auth = window.gapi.auth2.getAuthInstance();
+/*
         auth.grantOfflineAccess().then(function(resp) {
             // console.log("authorize grantOfflineAccess",resp);
-            var auth_code = resp.code;
+            // var auth_code = resp.code;
         });
-
-        // console.log("* instance.signIn");
-        this.state.google_api.signIn().then(user => {
-            // console.log("signIn return, user", user);
-
-            /*
-
-                // https://stackoverflow.com/questions/32848870/googleuser-object-does-not-have-grantofflineaccess-method
-                user.grantOfflineAccess({
-                    authuser: user.getAuthResponse().session_state.extraQueryParams.authuser
-                }).then(function(resp) {
-                    console.log("grantOfflineAccess",resp);
-                    var auth_code = resp.code;
-
-                    // !!! Allow popup
-
-                    // {code: "4/AABatlLl3D2rnSW7vIMcgAaua0uvaZ4oEvy5c2Q_3_NJpEDOk25y6zN8Pr7eBB8rsZ6wv0PQP_Rz_7ZABEccn4k"}
-                });
 */
+        auth.grantOfflineAccess();
 
-            // console.log("* user.getBasicProfile");
+        this.state.google_api.signIn().then(user => {
             let p = user.getBasicProfile();
-            // console.log("signIn return, user profile", p);
-            let isAuthorized = user.hasGrantedScopes(
-                'https://www.googleapis.com/auth/youtube.force-ssl https://www.googleapis.com/auth/youtubepartner'
-            );
-            // console.log("signIn return, isAuthorized=" + isAuthorized);
+            let isAuthorized = user.hasGrantedScopes('https://www.googleapis.com/auth/youtube.force-ssl https://www.googleapis.com/auth/youtubepartner');
             this.setState({
                 user: user,
                 userProfile: p,
@@ -136,43 +115,33 @@ class App extends Component {
     };
 
     grantAccess = () => {
-        // console.log("grantAccess");
 
         let auth = window.gapi.auth2.getAuthInstance();
-        // let user = auth.currentUser.get();
 
-        // console.log("grantAccess", user);
-        //
         // https://stackoverflow.com/questions/32848870/googleuser-object-does-not-have-grantofflineaccess-method
+/*
         auth.grantOfflineAccess({
             // authuser: user.getAuthResponse().session_state.extraQueryParams.authuser
             prompt: 'consent',
         }).then(function(resp) {
-            console.log('grantOfflineAccess', resp);
             var auth_code = resp.code;
-
             // !!! Allow popup
-
-            // {code: "4/AABatlLl3D2rnSW7vIMcgAaua0uvaZ4oEvy5c2Q_3_NJpEDOk25y6zN8Pr7eBB8rsZ6wv0PQP_Rz_7ZABEccn4k"}
         });
+*/
+        auth.grantOfflineAccess();
     };
 
     componentDidMount() {
-        // console.log("gapi", window.gapi);
         // https://developers.google.com/api-client-library/javascript/reference/referencedocs
 
         // Here we use gapi.load('client:auth2', ...) to load both the client module (for dealing with API requests)
         // and the auth2 module (for dealing with OAuth 2.0) upfront. The gapi.client.init fuction lazily loads auth2
         // if it is needed. If you are sure your app needs auth, loading the two modules 'client:auth2' together
         // before you call gapi.client.init will save one script load request.
-
-        // console.log("* gapi.load");
         window.gapi.load('client:auth2', this.initClient);
     }
 
     render() {
-        // console.log("render", this.state);
-
         const { isAuthorized, userProfile } = this.state;
 
         return (
@@ -180,6 +149,9 @@ class App extends Component {
                 <div className="App">
                     <div className="header">
                         Youtube Playlist Editor
+                        {isAuthorized && <div className="header-info">
+                            Authorized for {userProfile.getName()}
+                        </div>}
 {/*
                         <button onClick={this.grantAccess}>Grant access</button>
                         {isAuthorized ? (
@@ -195,13 +167,13 @@ class App extends Component {
                         )}
 */}
                         {isAuthorized && (
-                            <Link className="header-link" to="/channels">
-                                Channels
+                            <Link className="header-link" to="/playlists-videos">
+                                Playlists-Videos
                             </Link>
                         )}
                         {isAuthorized && (
-                            <Link className="header-link" to="/playlists-videos">
-                                PlaylistsVideos
+                            <Link className="header-link" to="/videos-videos">
+                                Videos-Videos
                             </Link>
                         )}
                         {isAuthorized && (
@@ -215,86 +187,84 @@ class App extends Component {
                             </Link>
                         )}
                         {isAuthorized && (
-                            <Link className="header-link" to="/videos2">
-                                Videos
+                            <Link className="header-link" to="/channels">
+                                Channels
                             </Link>
                         )}
                     </div>
-                    {/*<div className="content">*/}
-                        {!isAuthorized && (
-                            <div className="authorization">
-                                <p>
-                                    You need to authorize the application to
-                                    access your Youtube playlists.
-                                </p>
-                                <p>
-                                    Click the{' '}
-                                    <button onClick={this.authorize}>
-                                        Authorize
-                                    </button>{' '}
-                                    button to allow the access.
-                                </p>
-                            </div>
-                        )}
-                        <Switch>
-                            {/*<Route exact={true} path="/" component={Home}/>*/}
-                            {/*<Route path="/playlists" component={Playlists} />*/}
-                            <Route
-                                path="/channels"
-                                render={props => (
-                                    <Channels
-                                        {...props}
-                                        isAuthorized={isAuthorized}
-                                    />
-                                )}
-                            />
-                            <Route
-                                path="/subscriptions"
-                                render={props => (
-                                    <Subscriptions
-                                        {...props}
-                                        isAuthorized={isAuthorized}
-                                    />
-                                )}
-                            />
-                            <Route
-                                path="/playlists-videos"
-                                render={props => (
-                                    <PlaylistsVideos
-                                        {...props}
-                                        isAuthorized={isAuthorized}
-                                    />
-                                )}
-                            />
-                            <Route
-                                path="/playlists"
-                                render={props => (
-                                    <Playlists
-                                        {...props}
-                                        isAuthorized={isAuthorized}
-                                    />
-                                )}
-                            />
-                            <Route
-                                path="/videos/:playlistid"
-                                render={props => (
-                                    <Videos
-                                        {...props}
-                                        isAuthorized={isAuthorized}
-                                    />
-                                )}
-                            />
-                            <Route
-                                path="/videos2"
-                                render={props => (
-                                    <TwinVideos
-                                        {...props}
-                                        isAuthorized={isAuthorized}
-                                    />
-                                )}
-                            />
-                        </Switch>
-                    {/*</div>*/}
+                    {!isAuthorized && (
+                        <div className="authorization">
+                            <p>
+                                You need to authorize the application to
+                                access your Youtube playlists.
+                            </p>
+                            <p>
+                                Click the{' '}
+                                <button onClick={this.authorize}>
+                                    Authorize
+                                </button>{' '}
+                                button to allow the access.
+                            </p>
+                        </div>
+                    )}
+                    <Switch>
+                        {/*<Route exact={true} path="/" component={Home}/>*/}
+                        {/*<Route path="/playlists" component={Playlists} />*/}
+                        <Route
+                            path="/playlists-videos"
+                            render={props => (
+                                <PlaylistsVideos
+                                    {...props}
+                                    isAuthorized={isAuthorized}
+                                />
+                            )}
+                        />
+                        <Route
+                            path="/videos-videos"
+                            render={props => (
+                                <VideosVideos
+                                    {...props}
+                                    isAuthorized={isAuthorized}
+                                />
+                            )}
+                        />
+                        <Route
+                            path="/playlists"
+                            render={props => (
+                                <Playlists
+                                    {...props}
+                                    isAuthorized={isAuthorized}
+                                />
+                            )}
+                        />
+                        <Route
+                            path="/subscriptions"
+                            render={props => (
+                                <Subscriptions
+                                    {...props}
+                                    isAuthorized={isAuthorized}
+                                />
+                            )}
+                        />
+                        <Route
+                            path="/videos/:playlistid"
+                            render={props => (
+                                <Videos
+                                    {...props}
+                                    isAuthorized={isAuthorized}
+                                />
+                            )}
+                        />
+                        <Route
+                            path="/channels"
+                            render={props => (
+                                <Channels
+                                    {...props}
+                                    isAuthorized={isAuthorized}
+                                />
+                            )}
+                        />
+                    </Switch>
                 </div>
             </Router>
         );

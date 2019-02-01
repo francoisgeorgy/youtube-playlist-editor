@@ -30,7 +30,7 @@ import {
 // const SORT_ASCENDING = true;    // false means sort descending
 
 
-class TwinVideos extends Component {
+class VideosLists extends Component {
 
     constructor(props) {
         super(props);
@@ -73,7 +73,7 @@ class TwinVideos extends Component {
     }
 
     componentDidMount() {
-        // console.log('TwinVideos.componentDidMount');
+        // console.log('VideosLists.componentDidMount');
         this.refresh();
     }
 
@@ -81,7 +81,7 @@ class TwinVideos extends Component {
 
         // At this point, we're in the "commit" phase, so it's safe to load the new data.
 
-        // console.log(`TwinVideos.componentDidUpdate, playlistId=${this.state.playlistId}, prev=${prevState.playlistId}`, this.state);
+        // console.log(`VideosLists.componentDidUpdate, playlistId=${this.state.playlistId}, prev=${prevState.playlistId}`, this.state);
 
         if (!this.state.isAuthorized) return;
 
@@ -92,14 +92,14 @@ class TwinVideos extends Component {
             this.state.videos === null
         ) {
             // !!! only retrieve data if state.videos is empty; otherwise this will generate an endless loop.
-            console.log('TwinVideos.componentDidUpdate: call retrieveVideos');
+            console.log('VideosLists.componentDidUpdate: call retrieveVideos');
             this.retrieveVideos();
         }
 */
 
         if (this.state.playlists === null) {
             // !!! only retrieve data if state.playlists is empty; otherwise this will generate an endless loop.
-            // console.log('TwinVideos.componentDidUpdate: call retrievePlaylists');
+            // console.log('VideosLists.componentDidUpdate: call retrievePlaylists');
             this.retrievePlaylists();
         }
     }
@@ -129,7 +129,7 @@ class TwinVideos extends Component {
     };
 
     storePlaylists = data => {
-        // console.log("TwinVideos.storePlayLists", data.items);
+        // console.log("VideosLists.storePlayLists", data.items);
         if (!data) return;
         let list = data.items;
         list.sort(snippetTitleSort);
@@ -138,7 +138,7 @@ class TwinVideos extends Component {
 
     storeVideos = (listIndex, data, currentToken) => {
 
-        // console.log('TwinVideos.storeVideos', currentToken);
+        // console.log('VideosLists.storeVideos', currentToken);
 
         if (!data) return;
 
@@ -156,14 +156,14 @@ class TwinVideos extends Component {
         );
 
         if (data.nextPageToken) {
-            // console.log('TwinVideos.storeVideos: get next page with token ' + data.nextPageToken);
+            // console.log('VideosLists.storeVideos: get next page with token ' + data.nextPageToken);
             this.retrieveVideos(listIndex, data.nextPageToken);
         }
     };
 
     retrieveVideos = (listIndex, nextPageToken) => {
-        // console.log(`TwinVideos.retrieveVideos, playlistId=${this.state.playlistId}, pageToken=${nextPageToken}`);
-        // console.log(`TwinVideos.retrieveVideos set videosLoading=true`);
+        // console.log(`VideosLists.retrieveVideos, playlistId=${this.state.playlistId}, pageToken=${nextPageToken}`);
+        // console.log(`VideosLists.retrieveVideos set videosLoading=true`);
         this.setState({ errorMessage: null, videosLoading: true });
         executeRequest(
             buildPlaylistItemsRequest(this.state.lists[listIndex].playlistId, nextPageToken),
@@ -172,7 +172,7 @@ class TwinVideos extends Component {
     };
 
     retrievePlaylists = () => {
-        // console.log("TwinVideos.retrievePlayLists");
+        // console.log("VideosLists.retrievePlayLists");
         executeRequest(buildPlaylistsRequest(), this.storePlaylists);
     };
 
@@ -192,7 +192,7 @@ class TwinVideos extends Component {
     };
 
     setPlaylist = (event, listIndex) => {
-        // console.log("TwinVideos.setMoveToList", event.target.value, listIndex, this.state);
+        // console.log("VideosLists.setMoveToList", event.target.value, listIndex, this.state);
         let id = event.target.value;
         this.setState(
             produce(draft => {
@@ -206,7 +206,7 @@ class TwinVideos extends Component {
     };
 
     removeFromPlaylistState = (listIndex, playlistItemIds) => {
-        // console.log("TwinVideos.removeFromPlaylistState", playlistItemId);
+        // console.log("VideosLists.removeFromPlaylistState", playlistItemId);
         this.setState(
             produce(draft => {
                 let videos = draft.lists[listIndex].videos;
@@ -396,7 +396,7 @@ class TwinVideos extends Component {
     };
 
     updateFilter = (event, listIndex) => {
-        // console.log("TwinVideos.updateFilter", event.target.value);
+        // console.log("VideosLists.updateFilter", event.target.value);
         let f = event.target.value;
         this.setState(
             produce(draft => {
@@ -630,4 +630,4 @@ class TwinVideos extends Component {
 
 }
 
-export default TwinVideos;
+export default VideosLists;

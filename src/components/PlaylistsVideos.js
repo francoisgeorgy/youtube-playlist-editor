@@ -17,19 +17,14 @@ import {
 import {produce} from "immer";
 
 
-/**
- * Display the list of playlists of the authorized user.
- */
 class PlaylistsVideos extends Component {
 
     constructor(props) {
         super(props);
-        console.log('PlaylistsVideos.constructor', props);
         this.state = {
             isAuthorized: false,
             playlists: null,
             playlistId: null,
-            // playlistSelected: null,
             playlistsFilter: '',
             playlistsSortMethod: SORT_BY_SNIPPET_TITLE,
             playlistsSortDirection: SORT_ASCENDING,
@@ -41,22 +36,18 @@ class PlaylistsVideos extends Component {
     }
 
     static getDerivedStateFromProps(props, state) {
-        console.log('PlaylistsVideos.getDerivedStateFromProps', props);
         if (props.isAuthorized !== state.isAuthorized) {
             return {
                 isAuthorized: props.isAuthorized,
             };
         }
-
         // No state update necessary
         return null;
     }
 
     componentDidUpdate(prevProps, prevState) {
-        console.log('PlaylistsVideos.componentDidUpdate');
-        // At this point, we're in the "commit" phase, so it's safe to load the new data.
         if (this.state.isAuthorized && this.state.playlists === null) {
-            // !!! only retrieve data if state.playlists is empty; otherwise this will generate an endless loop.
+            // only retrieve data if state.playlists is empty; otherwise this will generate an endless loop.
             this.retrievePlaylists();
         }
     }
@@ -110,20 +101,16 @@ class PlaylistsVideos extends Component {
     };
 
     retrievePlaylists = nextPageToken => {
-        // console.log('PlaylistsVideos.retrievePlaylists', nextPageToken);
         executeRequest(buildPlaylistsRequest(nextPageToken),
             data => this.storePlaylists(data, nextPageToken));
     };
 
     storePlaylists = (data, currentToken) => {
-        console.log('PlaylistsVideos.storePlaylists');
 
         if (!data) return;
 
         let list = data.items;
         list.sort(snippetTitleSort);
-
-        console.log('PlaylistsVideos.storePlaylists', list);
 
         if (currentToken === undefined || !currentToken) {
             this.setState({ playlists: list });
@@ -138,8 +125,6 @@ class PlaylistsVideos extends Component {
     };
 
     retrieveVideos = nextPageToken => {
-        // console.log(`Videos.retrieveVideos, playlistId=${this.state.playlistId}, pageToken=${nextPageToken}`);
-        // console.log(`Videos.retrieveVideos set videosLoading=true`);
         executeRequest(
             buildPlaylistItemsRequest(this.state.playlistId, nextPageToken),
             data => this.storeVideos(data, nextPageToken)
@@ -151,11 +136,8 @@ class PlaylistsVideos extends Component {
     };
 
     storeVideos = (data, currentToken) => {
-        // console.log('Videos.storeVideos', currentToken);
 
         if (!data) return;
-
-        // console.log("Videos.storeVideos", data);
 
         let list = data.items;
         list.sort(snippetTitleSort);
@@ -172,12 +154,7 @@ class PlaylistsVideos extends Component {
     };
 
     updatePlaylistsFilter = event => {
-        console.log('PlaylistsVideos.updatePlaylistsFilter');
-        if (event.keyCode === 27) {
-            this.setState({ playlistsFilter: '' });
-        } else {
-            this.setState({ playlistsFilter: event.target.value });
-        }
+        this.setState({ playlistsFilter: event.keyCode === 27 ? '' : event.target.value });
     };
 
     clearPlaylistsFilter = () => {
@@ -185,12 +162,7 @@ class PlaylistsVideos extends Component {
     };
 
     updateVideosFilter = event => {
-        console.log('PlaylistsVideos.updateVideosFilter');
-        if (event.keyCode === 27) {
-            this.setState({ videosFilter: '' });
-        } else {
-            this.setState({ videosFilter: event.target.value });
-        }
+        this.setState({ videosFilter: event.keyCode === 27 ? '' : event.target.value });
     };
 
     clearVideosFilter = () => {
@@ -198,24 +170,20 @@ class PlaylistsVideos extends Component {
     };
 
     selectPlaylist = playlistId => {
-        console.log('PlaylistsVideos.selectPlaylist', playlistId);
         this.setState({playlistId: playlistId}, this.retrieveVideos);
     };
 
     componentDidMount() {
-        console.log('PlaylistsVideos.componentDidMount');
-        this.retrievePlaylists();
+        if (this.state.isAuthorized) this.retrievePlaylists();
     }
 
     render() {
         const { isAuthorized, playlistId, playlists, videos, playlistsFilter, videosFilter, playlistsSortMethod, videosSortMethod, playlistsSortDirection, videosSortDirection } = this.state;
 
         let pfilter = playlistsFilter.toLowerCase();
-        //let visibleVideos = videos.filter(video => video.snippet.title.toLowerCase().indexOf(vfilter) > -1).sort(this.getSortFunction(listIndex));
         let visiblePlaylists = playlists ? playlists.filter(playlist => playlist.snippet.title.toLowerCase().indexOf(pfilter) > -1).sort(this.getPlaylistsSortFunction()) : [];
 
         let vfilter = videosFilter.toLowerCase();
-        //let visibleVideos = videos.filter(video => video.snippet.title.toLowerCase().indexOf(vfilter) > -1).sort(this.getSortFunction(listIndex));
         let visibleVideos = videos ? videos.filter(video => video.snippet.title.toLowerCase().indexOf(vfilter) > -1).sort(this.getVideosSortFunction()) : [];
 
         if (!isAuthorized) {
@@ -223,7 +191,7 @@ class PlaylistsVideos extends Component {
         } else {
             if (playlists) {
                 return (
-                    <div className="playlists-videos">
+                    <div className="two-columns-headers">
                         <div className="column-header">
                             <div>
                                 <span className="strong">Playlists</span> • {playlists.length} playlists <button onClick={() => this.retrievePlaylists()}>refresh</button>

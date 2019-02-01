@@ -1,6 +1,6 @@
 import React, {Component, Fragment} from 'react';
 import {
-    buildApiRequest, buildChannelPlaylistsRequest, buildPlaylistItemsRequest,
+    buildChannelPlaylistsRequest,
     buildSubscriptionsRequest,
     executeRequest,
 } from '../utils/gapi';
@@ -16,73 +16,33 @@ class Subscriptions extends Component {
 
     constructor(props) {
         super(props);
-        // console.log('Subscriptions.constructor', props);
         this.state = {
             isAuthorized: false,
             subscriptions: null,
             subscriptionsPlaylists: {},
-            // newSubscription: '',
             filter: '',
         };
     }
 
     static getDerivedStateFromProps(props, state) {
-        // console.log('Subscriptions.getDerivedStateFromProps', props);
         if (props.isAuthorized !== state.isAuthorized) {
             return {
                 isAuthorized: props.isAuthorized,
             };
         }
-
         // No state update necessary
         return null;
     }
 
     componentDidUpdate(prevProps, prevState) {
-        // console.log('Subscriptions.componentDidUpdate');
-        // At this point, we're in the "commit" phase, so it's safe to load the new data.
         if (this.state.isAuthorized && this.state.subscriptions === null) {
-            // !!! only retrieve data if state.subscriptions is empty; otherwise this will generate an endless loop.
+            // Only retrieve data if state.subscriptions is empty; otherwise this will generate an endless loop.
             this.retrieve();
         }
     }
 
-    // newSubscriptionName = event => {
-    //     console.log('Subscriptions.newSubscriptionName');
-    //     this.setState({ newSubscription: event.target.value });
-    // };
-
-    // createSubscription = () => {
-    //     if (!this.state.newSubscription) return;
-    //     let request = buildApiRequest(
-    //         'POST',
-    //         '/youtube/v3/subscriptions',
-    //         {
-    //             part: 'snippet,status',
-    //             onBehalfOfContentOwner: '',
-    //         },
-    //         {
-    //             'snippet.title': this.state.newSubscription,
-    //             'snippet.description': '',
-    //             'snippet.tags[]': '',
-    //             'snippet.defaultLanguage': '',
-    //             'status.privacyStatus': 'private', // unlisted, private, public    https://developers.google.com/youtube/v3/docs/subscriptions#resource
-    //         }
-    //     );
-    //     //executeRequest(request, () => { this.insertSuccess(videoItemId) }, this.insertError);
-    //     executeRequest(
-    //         request,
-    //         resp => {
-    //             console.log('created subscription', resp);
-    //             this.retrieve();
-    //         },
-    //         this.createError
-    //     );
-    // };
-
     store = (data, currentToken) => {
 
-        // console.log('Subscriptions.store', data);
         if (!data) return;
 
         let list = data.items;
@@ -99,23 +59,11 @@ class Subscriptions extends Component {
         );
 
         if (data.nextPageToken) {
-            // console.log('TwinVideos.storeVideos: get next page with token ' + data.nextPageToken);
             this.retrieve(data.nextPageToken);
         }
-
-        // let list = data.items;
-        // list.sort(function(a, b) {
-        //     return a.snippet.title.toLowerCase() > b.snippet.title.toLowerCase()
-        //         ? 1
-        //         : b.snippet.title.toLowerCase() > a.snippet.title.toLowerCase()
-        //         ? -1
-        //         : 0;
-        // });
-        // this.setState({ subscriptions: list });
     };
 
     retrieve = nextPageToken => {
-        // console.log('Subscriptions.retrieve', nextPageToken);
         executeRequest(
             buildSubscriptionsRequest(nextPageToken),
             data => this.store(data, nextPageToken)
@@ -123,7 +71,6 @@ class Subscriptions extends Component {
     };
 
     storeChannelPlaylist = (channelId, data) => {
-        // console.log("storeChannelPlaylist", data);
         const list = data.items;
         list.sort(snippetTitleSort);
         this.setState(
@@ -134,7 +81,6 @@ class Subscriptions extends Component {
     };
 
     retrieveChannelPlaylists = (channelId) => {
-        // console.log(`retrieveChannelPlaylists(${channelId})`);
         executeRequest(
             buildChannelPlaylistsRequest(channelId),
             data => this.storeChannelPlaylist(channelId, data)
@@ -142,7 +88,6 @@ class Subscriptions extends Component {
     };
 
     updateFilter = event => {
-        // console.log('Subscriptions.updateFilter');
         if (event.keyCode === 27) {
             this.setState({ filter: '' });
         } else {
@@ -159,58 +104,16 @@ class Subscriptions extends Component {
     };
 
     componentDidMount() {
-        // console.log('Subscriptions.componentDidMount');
-        this.retrieve();
+        if (this.state.isAuthorized) this.retrieve();
     }
-
-    /*
-{
-   "kind":"youtube#subscription",
-   "etag":"\"DuHzAJ-eQIiCIp7p4ldoVcVAOeY/0v8-koTMYYwrjjH091gV-uVnD7w\"",
-   "id":"PL_x8MpUypxebPqAdp-FT7MeViRdJyVlwR",
-   "snippet":{
-      "publishedAt":"2015-10-04T21:36:35.000Z",
-      "channelId":"UCE0q36_agQAeb4G3PXivkew",
-      "title":"trailers",
-      "description":"",
-      "thumbnails":{
-         "default":{
-            "url":"https://i.ytimg.com/vi/z5gxjvYDPJQ/default.jpg",
-            "width":120,
-            "height":90
-         },
-         "medium":{
-            "url":"https://i.ytimg.com/vi/z5gxjvYDPJQ/mqdefault.jpg",
-            "width":320,
-            "height":180
-         },
-         "high":{
-            "url":"https://i.ytimg.com/vi/z5gxjvYDPJQ/hqdefault.jpg",
-            "width":480,
-            "height":360
-         }
-      },
-      "channelTitle":"François Georgy",
-      "localized":{
-         "title":"trailers",
-         "description":""
-      }
-   },
-   "contentDetails":{
-      "itemCount":3
-   }
-}
-    */
 
     render() {
         const { isAuthorized, subscriptions, subscriptionsPlaylists, filter } = this.state;
 
-        // console.log('Subscriptions render');
-
         const filt = filter.toLowerCase();
 
         if (!isAuthorized) {
-            return <div />;
+            return null;
         } else {
             if (subscriptions) {
                 return (
@@ -227,15 +130,14 @@ class Subscriptions extends Component {
                             {subscriptions
                                 .filter(p => (p.snippet.title.toLowerCase().indexOf(filt) > -1) || (p.snippet.description.toLowerCase().indexOf(filt) > -1))
                                 .map((subscription, index) => {
-                                    // console.log(subscription);
                                     const chanId = subscription.snippet.resourceId.channelId;
                                     return (
                                         <Fragment key={index}>
                                             <div>
+                                                <a href={`https://www.youtube.com/channel/${chanId}`} target="_blank" rel="noopener noreferrer"> <i className="fas fa-external-link-alt"></i></a>
                                                 <Link to={`/videos/${subscription.id}`}>
                                                     {subscription.snippet.title}
                                                 </Link>
-                                                <a href={`https://www.youtube.com/channel/${chanId}`} target="_blank" rel="noopener noreferrer">open</a>
                                             </div>
                                             <div>
                                                 {subscription.snippet.description}
@@ -254,7 +156,6 @@ class Subscriptions extends Component {
                                             </div>
                                         </Fragment>
                                     );
-                                    // return <div key={index}><a href={`#${subscription.id}`}>{subscription.snippet.title}</a> ({subscription.contentDetails.itemCount} videos)</div>
                                 })}
                         </div>
                     </div>

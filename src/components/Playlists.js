@@ -15,7 +15,6 @@ class Playlists extends Component {
 
     constructor(props) {
         super(props);
-        console.log('Playlists.constructor', props);
         this.state = {
             isAuthorized: false,
             playlists: null,
@@ -25,28 +24,23 @@ class Playlists extends Component {
     }
 
     static getDerivedStateFromProps(props, state) {
-        console.log('Playlists.getDerivedStateFromProps', props);
         if (props.isAuthorized !== state.isAuthorized) {
             return {
                 isAuthorized: props.isAuthorized,
             };
         }
-
         // No state update necessary
         return null;
     }
 
     componentDidUpdate(prevProps, prevState) {
-        console.log('Playlists.componentDidUpdate');
-        // At this point, we're in the "commit" phase, so it's safe to load the new data.
         if (this.state.isAuthorized && this.state.playlists === null) {
-            // !!! only retrieve data if state.playlists is empty; otherwise this will generate an endless loop.
+            // Only retrieve data if state.playlists is empty; otherwise this will generate an endless loop.
             this.retrieve();
         }
     }
 
     newPlaylistName = event => {
-        console.log('Playlists.newPlaylistName');
         this.setState({ newPlaylist: event.target.value });
     };
 
@@ -67,11 +61,9 @@ class Playlists extends Component {
                 'status.privacyStatus': 'private', // unlisted, private, public    https://developers.google.com/youtube/v3/docs/playlists#resource
             }
         );
-        //executeRequest(request, () => { this.insertSuccess(videoItemId) }, this.insertError);
         executeRequest(
             request,
             resp => {
-                console.log('created playlist', resp);
                 this.retrieve();
             },
             this.createError
@@ -80,8 +72,6 @@ class Playlists extends Component {
 
 
     store = (data, currentToken) => {
-        console.log('Playlists.store');
-
         if (!data) return;
 
         let list = data.items;
@@ -100,13 +90,11 @@ class Playlists extends Component {
     };
 
     retrieve = nextPageToken => {
-        console.log('Playlists.retrieve', nextPageToken);
         executeRequest(buildPlaylistsRequest(nextPageToken),
             data => this.store(data, nextPageToken));
     };
 
     updateFilter = event => {
-        console.log('Playlists.updateFilter');
         if (event.keyCode === 27) {
             this.setState({ filter: '' });
         } else {
@@ -119,56 +107,14 @@ class Playlists extends Component {
     };
 
     componentDidMount() {
-        console.log('Playlists.componentDidMount');
-        this.retrieve();
+        if (this.state.isAuthorized) this.retrieve();
     }
-
-    /*
-{
-   "kind":"youtube#playlist",
-   "etag":"\"DuHzAJ-eQIiCIp7p4ldoVcVAOeY/0v8-koTMYYwrjjH091gV-uVnD7w\"",
-   "id":"PL_x8MpUypxebPqAdp-FT7MeViRdJyVlwR",
-   "snippet":{
-      "publishedAt":"2015-10-04T21:36:35.000Z",
-      "channelId":"UCE0q36_agQAeb4G3PXivkew",
-      "title":"trailers",
-      "description":"",
-      "thumbnails":{
-         "default":{
-            "url":"https://i.ytimg.com/vi/z5gxjvYDPJQ/default.jpg",
-            "width":120,
-            "height":90
-         },
-         "medium":{
-            "url":"https://i.ytimg.com/vi/z5gxjvYDPJQ/mqdefault.jpg",
-            "width":320,
-            "height":180
-         },
-         "high":{
-            "url":"https://i.ytimg.com/vi/z5gxjvYDPJQ/hqdefault.jpg",
-            "width":480,
-            "height":360
-         }
-      },
-      "channelTitle":"François Georgy",
-      "localized":{
-         "title":"trailers",
-         "description":""
-      }
-   },
-   "contentDetails":{
-      "itemCount":3
-   }
-}
-    */
 
     render() {
         const { isAuthorized, playlists, newPlaylist, filter } = this.state;
 
-        console.log('Playlists render');
-
         if (!isAuthorized) {
-            return <div />;
+            return null;
         } else {
             if (playlists) {
                 return (
