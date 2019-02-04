@@ -194,6 +194,72 @@ class VideosVideos extends Component {
         );
     };
 
+
+    /**
+     * Returns {playlistItemIds, videoIds} that are NOT in list[listIndex]
+     */
+/*
+    notInPlaylist = (videoIds, listIndex) => {
+
+        // let filteredPlaylistItemIds = [];
+        let filteredVideoIds = [];
+
+        // this.state.lists[listIndex].videos
+        //     .forEach(playlistItem => {
+        //         if (!videoIds.includes(playlistItem.contentDetails.videoId)) {
+        //             filteredVideoIds.push(playlistItem.contentDetails.videoId);
+        //         }
+        //     });
+
+        // filteredVideoIds = myArray.filter( ( el ) => !toRemove.includes( el ) );
+
+        return {
+            // playlistItemIds: filteredPlaylistItemIds,
+            videoIds: filteredVideoIds
+        }
+
+    };
+*/
+
+    /**
+     * returns true if videoId is in list[listIndex]
+     */
+    inPlaylist = (videoId, listIndex) => {
+
+        // let filteredPlaylistItemIds = [];
+        // let filteredVideoIds = [];
+
+        console.log(`inPlaylist: target list = ${listIndex}`);
+
+        const videos = this.state.lists[listIndex].videos;
+
+        for (let i=0; i<videos.length; i++) {
+            // console.log(`inPlaylist: `, videos[i]);
+            if (videos[i].contentDetails.videoId === videoId) {
+                console.log(`inPlaylist: ${videoId} ${videos[i].snippet.title} already in target list`);
+                return true;
+            }
+        }
+
+        // this.state.lists[listIndex].videos
+        //     .forEach(playlistItem => {
+        //         if (playlistItem.contentDetails.videoId === videoId) {
+        //             console.log(`inPlaylist: ${videoId} ${playlistItem.snippet.title} already in target list`);
+        //             return true;
+        //         }
+        //     });
+
+        return false;
+
+        // filteredVideoIds = myArray.filter( ( el ) => !toRemove.includes( el ) );
+
+        // return {
+        //     // playlistItemIds: filteredPlaylistItemIds,
+        //     videoIds: filteredVideoIds
+        // }
+
+    };
+
     getVisibleIds = listIndex => {
 
         let filter = this.state.lists[listIndex].filter.toLowerCase();
@@ -204,9 +270,12 @@ class VideosVideos extends Component {
         this.state.lists[listIndex].videos
             .filter(playlistItem => playlistItem.snippet.title.toLowerCase().indexOf(filter) > -1)
             .forEach(playlistItem => {
-                playlistItemIds.push(playlistItem.id);
-                if (!videoIds.includes(playlistItem.contentDetails.videoId)) {
-                    videoIds.push(playlistItem.contentDetails.videoId); // avoid pushing duplicates
+                if (!this.inPlaylist(playlistItem.contentDetails.videoId, (listIndex + 1) % 2)) {
+                    console.log(`getVisibleIds push ${playlistItem.contentDetails.videoId}`);
+                    playlistItemIds.push(playlistItem.id);
+                    if (!videoIds.includes(playlistItem.contentDetails.videoId)) {
+                        videoIds.push(playlistItem.contentDetails.videoId); // avoid pushing duplicates
+                    }
                 }
             });
 
@@ -267,6 +336,9 @@ class VideosVideos extends Component {
 
     copyAll = (sourceListIndex, targetListIndex) => {
         const { playlistItemIds, videoIds } = this.getVisibleIds(sourceListIndex);
+        if (videoIds.length === 0) {
+            return;
+        }
         this.mark(sourceListIndex, playlistItemIds);
         copyMultipleIntoPlaylist(
             playlistItemIds,
