@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/youtube-playlist-editor/precache-manifest.862ea5bee53d15a7dad697f322f557bc.js"
+  "/youtube-playlist-editor/precache-manifest.1c58cf48fa09082cec1694c804458551.js"
 );
 
 workbox.clientsClaim();
