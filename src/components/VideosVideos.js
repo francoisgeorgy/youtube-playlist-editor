@@ -194,70 +194,17 @@ class VideosVideos extends Component {
         );
     };
 
-
-    /**
-     * Returns {playlistItemIds, videoIds} that are NOT in list[listIndex]
-     */
-/*
-    notInPlaylist = (videoIds, listIndex) => {
-
-        // let filteredPlaylistItemIds = [];
-        let filteredVideoIds = [];
-
-        // this.state.lists[listIndex].videos
-        //     .forEach(playlistItem => {
-        //         if (!videoIds.includes(playlistItem.contentDetails.videoId)) {
-        //             filteredVideoIds.push(playlistItem.contentDetails.videoId);
-        //         }
-        //     });
-
-        // filteredVideoIds = myArray.filter( ( el ) => !toRemove.includes( el ) );
-
-        return {
-            // playlistItemIds: filteredPlaylistItemIds,
-            videoIds: filteredVideoIds
-        }
-
-    };
-*/
-
     /**
      * returns true if videoId is in list[listIndex]
      */
     inPlaylist = (videoId, listIndex) => {
-
-        // let filteredPlaylistItemIds = [];
-        // let filteredVideoIds = [];
-
-        console.log(`inPlaylist: target list = ${listIndex}`);
-
         const videos = this.state.lists[listIndex].videos;
-
         for (let i=0; i<videos.length; i++) {
-            // console.log(`inPlaylist: `, videos[i]);
             if (videos[i].contentDetails.videoId === videoId) {
-                console.log(`inPlaylist: ${videoId} ${videos[i].snippet.title} already in target list`);
                 return true;
             }
         }
-
-        // this.state.lists[listIndex].videos
-        //     .forEach(playlistItem => {
-        //         if (playlistItem.contentDetails.videoId === videoId) {
-        //             console.log(`inPlaylist: ${videoId} ${playlistItem.snippet.title} already in target list`);
-        //             return true;
-        //         }
-        //     });
-
         return false;
-
-        // filteredVideoIds = myArray.filter( ( el ) => !toRemove.includes( el ) );
-
-        // return {
-        //     // playlistItemIds: filteredPlaylistItemIds,
-        //     videoIds: filteredVideoIds
-        // }
-
     };
 
     getVisibleIds = listIndex => {
@@ -270,8 +217,29 @@ class VideosVideos extends Component {
         this.state.lists[listIndex].videos
             .filter(playlistItem => playlistItem.snippet.title.toLowerCase().indexOf(filter) > -1)
             .forEach(playlistItem => {
-                if (!this.inPlaylist(playlistItem.contentDetails.videoId, (listIndex + 1) % 2)) {
-                    console.log(`getVisibleIds push ${playlistItem.contentDetails.videoId}`);
+                playlistItemIds.push(playlistItem.id);
+                if (!videoIds.includes(playlistItem.contentDetails.videoId)) {
+                    videoIds.push(playlistItem.contentDetails.videoId); // avoid pushing duplicates
+                }
+            });
+
+        return {
+            playlistItemIds,
+            videoIds
+        }
+    };
+
+    getVisibleAndUniqueIds = (listIndex, targetIndex) => {
+
+        let filter = this.state.lists[listIndex].filter.toLowerCase();
+
+        let playlistItemIds = [];
+        let videoIds = [];
+
+        this.state.lists[listIndex].videos
+            .filter(playlistItem => playlistItem.snippet.title.toLowerCase().indexOf(filter) > -1)
+            .forEach(playlistItem => {
+                if (!this.inPlaylist(playlistItem.contentDetails.videoId, targetIndex)) {
                     playlistItemIds.push(playlistItem.id);
                     if (!videoIds.includes(playlistItem.contentDetails.videoId)) {
                         videoIds.push(playlistItem.contentDetails.videoId); // avoid pushing duplicates
@@ -284,6 +252,7 @@ class VideosVideos extends Component {
             videoIds
         }
     };
+
 
     mark = (listIndex, playlistItemIds) => {
         this.setState(
@@ -321,6 +290,7 @@ class VideosVideos extends Component {
     };
 
     copy = (sourceListIndex, targetListIndex, playlistItemId, videoId) => {
+        if (this.inPlaylist(videoId, targetListIndex)) return;
         this.mark(sourceListIndex, playlistItemId);
         copyMultipleIntoPlaylist(
             [playlistItemId],
@@ -335,7 +305,7 @@ class VideosVideos extends Component {
     };
 
     copyAll = (sourceListIndex, targetListIndex) => {
-        const { playlistItemIds, videoIds } = this.getVisibleIds(sourceListIndex);
+        const { playlistItemIds, videoIds } = this.getVisibleAndUniqueIds(sourceListIndex, targetListIndex);
         if (videoIds.length === 0) {
             return;
         }
@@ -354,6 +324,7 @@ class VideosVideos extends Component {
     };
 
     move = (sourceListIndex, targetListIndex, playlistItemId, videoId) => {
+        if (this.inPlaylist(videoId, targetListIndex)) return;
         this.mark(sourceListIndex, playlistItemId);
         moveMultipleIntoPlaylist(
             [playlistItemId],
@@ -372,7 +343,10 @@ class VideosVideos extends Component {
     };
 
     moveAll = (sourceListIndex, targetListIndex) => {
-        const { playlistItemIds, videoIds } = this.getVisibleIds(sourceListIndex);
+        const { playlistItemIds, videoIds } = this.getVisibleAndUniqueIds(sourceListIndex, targetListIndex);
+        if (videoIds.length === 0) {
+            return;
+        }
         this.mark(sourceListIndex, playlistItemIds);
         moveMultipleIntoPlaylist(
             playlistItemIds,
@@ -474,7 +448,7 @@ class VideosVideos extends Component {
 
     render() {
 
-        const { isAuthorized, playlists, lists, sortDirection, sync } = this.state;
+        const { isAuthorized, playlists, lists, sync } = this.state;
 
         const filters = [
             lists[LEFT].filter.toLowerCase(),
@@ -502,6 +476,7 @@ class VideosVideos extends Component {
                     {[LEFT, RIGHT].map(
                         (listIndex, index) => {
                             const sortMethod = lists[listIndex].sortMethod;
+                            const sortDirection = lists[listIndex].sortDirection;
                             return (
                                 <div className="column-header" key={index}>
                                     {playlists &&
