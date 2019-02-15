@@ -1,13 +1,13 @@
 {
-  "main.css": "/youtube-playlist-editor/static/css/main.15e43a0b.chunk.css",
-  "main.js": "/youtube-playlist-editor/static/js/main.43be2639.chunk.js",
-  "main.js.map": "/youtube-playlist-editor/static/js/main.43be2639.chunk.js.map",
-  "static/js/1.f5511120.chunk.js": "/youtube-playlist-editor/static/js/1.f5511120.chunk.js",
-  "static/js/1.f5511120.chunk.js.map": "/youtube-playlist-editor/static/js/1.f5511120.chunk.js.map",
+  "main.css": "/youtube-playlist-editor/static/css/main.40e76e03.chunk.css",
+  "main.js": "/youtube-playlist-editor/static/js/main.23d56898.chunk.js",
+  "main.js.map": "/youtube-playlist-editor/static/js/main.23d56898.chunk.js.map",
+  "static/js/1.0d7d16c3.chunk.js": "/youtube-playlist-editor/static/js/1.0d7d16c3.chunk.js",
+  "static/js/1.0d7d16c3.chunk.js.map": "/youtube-playlist-editor/static/js/1.0d7d16c3.chunk.js.map",
   "runtime~main.js": "/youtube-playlist-editor/static/js/runtime~main.5b0165de.js",
   "runtime~main.js.map": "/youtube-playlist-editor/static/js/runtime~main.5b0165de.js.map",
-  "static/css/main.15e43a0b.chunk.css.map": "/youtube-playlist-editor/static/css/main.15e43a0b.chunk.css.map",
+  "static/css/main.40e76e03.chunk.css.map": "/youtube-playlist-editor/static/css/main.40e76e03.chunk.css.map",
   "index.html": "/youtube-playlist-editor/index.html",
-  "precache-manifest.1c58cf48fa09082cec1694c804458551.js": "/youtube-playlist-editor/precache-manifest.1c58cf48fa09082cec1694c804458551.js",
+  "precache-manifest.ced3371891e36b0a4bb4710792ee1b9b.js": "/youtube-playlist-editor/precache-manifest.ced3371891e36b0a4bb4710792ee1b9b.js",
   "service-worker.js": "/youtube-playlist-editor/service-worker.js"
 }
