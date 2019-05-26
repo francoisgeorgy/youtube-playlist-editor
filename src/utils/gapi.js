@@ -72,6 +72,9 @@ export function buildApiRequest(requestMethod, path, params, properties) {
             params: params,
         });
     }
+
+    console.log(request);
+
     return request;
 }
 
@@ -154,6 +157,7 @@ export function executeRequest(request, callback, callbackError) {
             //     headers	    object | undefined	The map of HTTP response headers.
             //     status	    number | undefined	HTTP status.
             //     statusText	string | undefined	HTTP status text.
+            console.log(response);
             if (callback) callback(response.result);
         }
     ).catch(

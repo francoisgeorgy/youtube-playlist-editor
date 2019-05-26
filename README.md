@@ -28,6 +28,11 @@
 
 - https://github.com/youtube/api-samples/tree/master/javascript
 
+#### List of saved playlist
+
+It is not possible to list saved playlists. See https://issuetracker.google.com/issues/79957181
+
+
 #### Watch Later playlist:
 
 
