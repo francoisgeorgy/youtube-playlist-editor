@@ -32,7 +32,7 @@ import {
 const LEFT = 0;
 const RIGHT = 1;
 
-class VideosVideos extends Component {
+class MoveVideos extends Component {
 
     constructor(props) {
         super(props);
@@ -73,18 +73,6 @@ class VideosVideos extends Component {
         return null;
     }
 
-    componentDidMount() {
-        if (this.state.isAuthorized) this.refresh();
-    }
-
-    componentDidUpdate(prevProps, prevState) {
-        if (!this.state.isAuthorized) return;
-        if (this.state.playlists === null) {
-            // Only retrieve data if state.playlists is empty; otherwise this will generate an endless loop.
-            this.retrievePlaylists();
-        }
-    }
-
     setSortMethod = (listIndex, method) => {
         // if same method, then flip the direction
         this.setState(
@@ -111,13 +99,6 @@ class VideosVideos extends Component {
             case SORT_BY_VIDEO_PUBLISHED_AT : return asc ? contentDetailsPublishedAtSort : contentDetailsPublishedAtSortReverse;
             default : return snippetTitleSort;
         }
-    };
-
-    storePlaylists = data => {
-        if (!data) return;
-        let list = data.items;
-        list.sort(snippetTitleSort);
-        this.setState({ playlists: list });
     };
 
     storeVideos = (listIndex, data, currentToken) => {
@@ -150,8 +131,30 @@ class VideosVideos extends Component {
         );
     };
 
-    retrievePlaylists = () => {
-        executeRequest(buildPlaylistsRequest(), this.storePlaylists);
+    storePlaylists = (data, currentToken) => {
+        if (!data) return;
+
+        let list = data.items;
+        list.sort(snippetTitleSort);
+
+        // console.log(list);
+
+        if (currentToken === undefined || !currentToken) {
+            this.setState({ playlists: list });
+        } else {
+            this.setState(prevState => ({ playlists: [...prevState.playlists, ...list] }));
+        }
+
+        if (data.nextPageToken) {
+            this.retrievePlaylists(data.nextPageToken);
+        }
+
+        // this.setState({ playlists: list });
+    };
+
+    retrievePlaylists = nextPageToken => {
+        // executeRequest(buildPlaylistsRequest(), this.storePlaylists);
+        executeRequest(buildPlaylistsRequest(nextPageToken), data => this.storePlaylists(data, nextPageToken));
     };
 
     refreshPlaylists = () => {
@@ -416,6 +419,16 @@ class VideosVideos extends Component {
         );
     };
 
+    dismissErrorMessage = (listIndex) => {
+        this.setState(produce(draft => {
+            draft.lists[listIndex].errorMessage = null;
+        }));
+    };
+
+    toggleSync = () => {
+        this.setState({sync: !this.state.sync});
+    };
+
     refresh = (listIndex, clearFilter = false) => {
         if (!this.state.isAuthorized) return;
         this.setState(
@@ -435,16 +448,17 @@ class VideosVideos extends Component {
         );
     };
 
-    dismissErrorMessage = (listIndex) => {
-        this.setState(produce(draft => {
-            draft.lists[listIndex].errorMessage = null;
-        }));
-    };
+    componentDidMount() {
+        if (this.state.isAuthorized) this.refresh();
+    }
 
-    toggleSync = () => {
-        this.setState({sync: !this.state.sync});
-    };
-
+    componentDidUpdate(prevProps, prevState) {
+        if (!this.state.isAuthorized) return;
+        if (this.state.playlists === null) {
+            // Only retrieve data if state.playlists is empty; otherwise this will generate an endless loop.
+            this.retrievePlaylists();
+        }
+    }
 
     render() {
 
@@ -482,7 +496,7 @@ class VideosVideos extends Component {
                                     {playlists &&
                                     <div className="playlist-selector">
                                         <select onChange={(event) => this.setPlaylist(event, listIndex)}>
-                                            <option defaultValue={lists[listIndex].playlistId}>select playlist...</option>
+                                            <option defaultValue={lists[listIndex].playlistId}>select playlist... ({playlists.length})</option>
                                             {playlists.map((p, i) => <option key={i} value={p.id}>{p.snippet.title} ({p.contentDetails.itemCount})</option>)}
                                         </select> <button onClick={this.refreshPlaylists}>refresh</button>
                                         {' '}
@@ -657,4 +671,4 @@ class VideosVideos extends Component {
 
 }
 
-export default VideosVideos;
+export default MoveVideos;

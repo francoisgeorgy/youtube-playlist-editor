@@ -77,6 +77,8 @@ class Playlists extends Component {
         let list = data.items;
         list.sort(snippetTitleSort);
 
+        // console.log(list);
+
         if (currentToken === undefined || !currentToken) {
             this.setState({ playlists: list });
         } else {
@@ -90,8 +92,7 @@ class Playlists extends Component {
     };
 
     retrieve = nextPageToken => {
-        executeRequest(buildPlaylistsRequest(nextPageToken),
-            data => this.store(data, nextPageToken));
+        executeRequest(buildPlaylistsRequest(nextPageToken), data => this.store(data, nextPageToken));
     };
 
     updateFilter = event => {

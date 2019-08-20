@@ -1,15 +1,15 @@
 {
     "name": "youtube-playlist-editor",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "private": true,
     "homepage": "https://francoisgeorgy.github.io/youtube-playlist-editor",
     "dependencies": {
-        "eslint-config-prettier": "^4.3.0",
-        "immer": "^3.1.2",
-        "react": "^16.8.6",
-        "react-dom": "^16.8.6",
-        "react-router-dom": "^5.0.0",
-        "react-scripts": "3.0.1"
+        "eslint-config-prettier": "^6.1.0",
+        "immer": "^3.2.0",
+        "react": "^16.9.0",
+        "react-dom": "^16.9.0",
+        "react-router-dom": "^5.0.1",
+        "react-scripts": "3.1.1"
     },
     "scripts": {
         "start": "PORT=3001 react-scripts start",
@@ -26,9 +26,9 @@
         "not op_mini all"
     ],
     "devDependencies": {
-        "gh-pages": "^2.0.1",
-        "husky": "^2.3.0",
-        "prettier": "1.17.1",
-        "pretty-quick": "^1.11.0"
+        "gh-pages": "^2.1.1",
+        "husky": "^3.0.4",
+        "prettier": "1.18.2",
+        "pretty-quick": "^1.11.1"
     }
 }

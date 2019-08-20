@@ -17,7 +17,7 @@ import {
 import {produce} from "immer";
 
 
-class PlaylistsVideos extends Component {
+class BrowsePlaylists extends Component {
 
     constructor(props) {
         super(props);
@@ -252,7 +252,7 @@ class PlaylistsVideos extends Component {
                         <div className="column-content">
                             {(playlistId === null) &&
                             <div>
-                                <span className="italic">Please select a playlist</span>
+                                <span className="italic">Please select a playlist on the left</span>
                             </div>
                             }
                             {(playlistId !== null) && (visibleVideos.length === 0) &&
@@ -278,4 +278,4 @@ class PlaylistsVideos extends Component {
     }
 }
 
-export default PlaylistsVideos;
+export default BrowsePlaylists;

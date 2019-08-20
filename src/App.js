@@ -5,8 +5,8 @@ import Videos from './components/Videos';
 import { BrowserRouter as Router, Route, Link, Switch } from 'react-router-dom';
 import Channels from './components/Channels';
 import Subscriptions from "./components/Subscriptions";
-import PlaylistsVideos from "./components/PlaylistsVideos";
-import VideosVideos from "./components/VideosVideos";
+import BrowsePlaylists from "./components/BrowsePlaylists";
+import MoveVideos from "./components/MoveVideos";
 // import { library } from '@fortawesome/fontawesome-svg-core'
 // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 //
@@ -167,13 +167,13 @@ class App extends Component {
                         )}
 */}
                         {isAuthorized && (
-                            <Link className="header-link" to="/playlists-videos">
-                                Playlists-Videos
+                            <Link className="header-link" to="/browse-playlists">
+                                Browse playlists
                             </Link>
                         )}
                         {isAuthorized && (
-                            <Link className="header-link" to="/videos-videos">
-                                Videos-Videos
+                            <Link className="header-link" to="/move-videos">
+                                Move videos
                             </Link>
                         )}
                         {isAuthorized && (
@@ -211,18 +211,18 @@ class App extends Component {
                         {/*<Route exact={true} path="/" component={Home}/>*/}
                         {/*<Route path="/playlists" component={Playlists} />*/}
                         <Route
-                            path="/playlists-videos"
+                            path="/browse-playlists"
                             render={props => (
-                                <PlaylistsVideos
+                                <BrowsePlaylists
                                     {...props}
                                     isAuthorized={isAuthorized}
                                 />
                             )}
                         />
                         <Route
-                            path="/videos-videos"
+                            path="/move-videos"
                             render={props => (
-                                <VideosVideos
+                                <MoveVideos
                                     {...props}
                                     isAuthorized={isAuthorized}
                                 />
