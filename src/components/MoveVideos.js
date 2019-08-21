@@ -134,16 +134,31 @@ class MoveVideos extends Component {
     storePlaylists = (data, currentToken) => {
         if (!data) return;
 
-        let list = data.items;
+        const list = data.items;
         list.sort(snippetTitleSort);
 
         // console.log(list);
-
+/*
         if (currentToken === undefined || !currentToken) {
             this.setState({ playlists: list });
         } else {
+            // const new_list = [...prevState.playlists, ...list];
+            // new_list.sort(snippetTitleSort);
+            // this.setState(prevState => ({ playlists: new_list}));
             this.setState(prevState => ({ playlists: [...prevState.playlists, ...list] }));
         }
+*/
+        this.setState(
+            produce(draft => {
+                if (currentToken === undefined || !currentToken) {
+                    draft.playlists = list;
+                } else {
+                    const new_list = [...draft.playlists, ...list];
+                    new_list.sort(snippetTitleSort);
+                    draft.playlists = new_list;
+                }
+            })
+        );
 
         if (data.nextPageToken) {
             this.retrievePlaylists(data.nextPageToken);
