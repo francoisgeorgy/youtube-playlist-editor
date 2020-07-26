@@ -1,3 +1,7 @@
+# THIS PROJECT IS NOT MAINTAINED ANYMORE
+
+---
+
 # Resources
 
 ## Google API :
@@ -17,7 +21,6 @@
     https://www.googleapis.com/auth/youtube.upload	Manage your YouTube videos
     https://www.googleapis.com/auth/youtubepartner	View and manage your assets and associated content on YouTube
     https://www.googleapis.com/auth/youtubepartner-channel-audit	View private information of your YouTube channel relevant during the audit process with a YouTube partner
-
 
 ### Youtube API
 
